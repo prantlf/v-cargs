@@ -17,12 +17,12 @@ pub mut:
 pub fn parse[T](usage string, input Input) !(T, []string) {
 	mut re_opt := regex.regex_opt('^-([^\\-])|(?:-([^ =]+))(?:\\s*=(.+))?$') or { panic(err) }
 	opts := analyse_usage(usage)
-	args := input.args or { os.args[1..] }
-
+	raw_args := input.args or { os.args[1..] }
+	args := split(opts, raw_args)
 	mut cfg := T{}
 	mut cmds := []string{}
-	mut i := 0
 	l := args.len
+	mut i := 0
 	for i < l {
 		arg := args[i]
 		i++
@@ -46,8 +46,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 				}
 				else {}
 			}
-			start, _ := re_opt.match_string(arg)
-			if start < 0 {
+			if !re_opt.matches_string(arg) {
 				return error('invalid argument "${arg}"')
 			}
 			grp_opt := re_opt.get_group_list()
@@ -89,6 +88,34 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 		i++
 	}
 	return cfg, cmds
+}
+
+fn split(opts []Opt, raw_args []string) []string {
+	mut re_cond := regex.regex_opt('^-\\w+$') or { panic(err) }
+	mut args := []string{}
+	l := raw_args.len
+	mut i := 0
+	for i < l {
+		arg := raw_args[i]
+		if arg == '--' {
+			break
+		}
+		i++
+		if arg.len > 1 && arg[0] == `-` && arg[1] != `-` {
+			if re_cond.matches_string(arg) {
+				for j := 1; j < arg.len; j++ {
+					args << '-${rune(arg[j])}'
+				}
+				continue
+			}
+		}
+		args << arg
+	}
+	for i < l {
+		args << raw_args[i]
+		i++
+	}
+	return args
 }
 
 fn (opts []Opt) find(arg string, input Input) ?(Opt, bool) {

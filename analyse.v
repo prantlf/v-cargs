@@ -21,8 +21,7 @@ fn analyse_usage(text string) []Opt {
 			if line.len == 0 {
 				break
 			}
-			idx_opt, _ := re_opt.match_string(line)
-			if idx_opt >= 0 {
+			if re_opt.matches_string(line) {
 				grp_opt := re_opt.get_group_list()
 				mut opt := Opt{}
 				if grp_opt[0].start >= 0 {

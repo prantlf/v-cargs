@@ -71,6 +71,22 @@ fn test_dash_arg() {
 	assert args == ['-test']
 }
 
+struct Condensed {
+	o bool
+	t bool
+}
+
+fn test_condensed() {
+	opts, args := parse[Condensed]('
+Options:
+  -o
+	-t
+', Input{ args: ['-ot'] })!
+	assert opts.o == true
+	assert opts.t == true
+	assert args == []
+}
+
 enum Human {
 	man
 	woman
