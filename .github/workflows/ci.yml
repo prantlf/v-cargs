@@ -1,0 +1,33 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - '**'
+    paths-ignore:
+      - '**/*.md'
+      - LICENSE
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout V
+      uses: actions/checkout@v3
+      with:
+        repository: vlang/v
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        path: cargs
+    - name: Build V
+      run: make
+    - name: Test
+      run: |
+        cd cargs
+        ../v test .
+        ../v run help_test.v
+        ../v test version_test.v
