@@ -1,6 +1,6 @@
 # Command-line Arguments
 
-Parses command-line arguments to statically typed options with the help of usage description.
+Parses command-line arguments to statically typed options or a string map with the help of usage description.
 
 ## Synopsis
 
