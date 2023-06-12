@@ -236,7 +236,7 @@ fn get_int[T](val string, ignore_overflow bool) !T {
 fn get_float[T](val string, ignore_overflow bool) !T {
 	if num := strconv.atof64(val) {
 		f := T(num)
-		if !ignore_overflow && num - f > math.smallest_non_zero_f64 {
+		if !ignore_overflow && num - f64(f) > math.smallest_non_zero_f64 {
 			return error('unable to convert "${num}" to ${T.name}')
 		}
 		return f
