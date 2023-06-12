@@ -15,19 +15,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout V
-      uses: actions/checkout@v3
+    - name: Setup V
+      uses: prantlf/setup-v-action@v1
       with:
-        repository: vlang/v
-    - name: Checkout
+        version: master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout Sources
       uses: actions/checkout@v3
-      with:
-        path: cargs
-    - name: Build V
-      run: make
     - name: Test
       run: |
-        cd cargs
-        ../v test .
-        ../v run help_test.v
-        ../v test version_test.v
+        v test .
+        v run help_test.v
+        v test version_test.v
