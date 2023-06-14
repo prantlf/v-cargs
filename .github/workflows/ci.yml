@@ -19,8 +19,6 @@ jobs:
       uses: prantlf/setup-v-action@v1
       with:
         version: master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout Sources
       uses: actions/checkout@v3
     - name: Test
