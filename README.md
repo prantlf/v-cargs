@@ -130,11 +130,26 @@ Assigning boolean flags or variable values to option fields may fail. For exampl
 * If the field type isn't a string and the field value cannot be converted from the string value.
 * If the numeric field type is too small to accommodate the number converted from the string value.
 
+An option with a value can be entered multiple times. All values can be stored in an array, for example:
+
+```go
+usage := '...
+
+Options:
+  -n, --numbers <number>  a list of numbers to use
+
+...'
+
+struct Opts {
+  numbers []int
+}
+```
+
 ### Other Arguments
 
 An option starts with `-` or `--` and has to consist of at least one more letter. A single dash (`-`) isn't an option, but another argument. An argument not starting with a dash (`-`) is a plain argument and not an option.
 
-If you want to handle some argument as other arguments and not as options, put two dashes (`--`) on the command line and appens such arguments behind it. The two dashes (`--`) will be ignored. If you need the two dashes (`--`) as another argument, append them once more after the first ones to the command line.
+If you want to handle some argument as other arguments and not as options, put two dashes (`--`) on the command line and appends such arguments behind it. The two dashes (`--`) will be ignored. If you need the two dashes (`--`) as another argument, append them once more after the first ones to the command line.
 
 ### Input Fields
 
@@ -179,7 +194,7 @@ struct Opts {
 }
 ```
 
-If you require some options to be always entered, it's possible by the attribute `required`. For example:
+If you require an option to be always entered, it's possible by the attribute `required`. For example:
 
 ```go
 usage := '...
@@ -194,12 +209,42 @@ struct Opts {
 }
 ```
 
+If you need to supply multiple values for an option and you want to use more condensed syntax then repeating the option on the command line, you can supply all values only once, if there's a separator, which otherwise cannot be present within a value. For example, you can supply two comma-delimited integers as `-n 1,2` by the attribute `split`:
+
+```go
+usage := '...
+
+Options:
+  -n, --numbers <number>  a list of numbers to use
+
+...'
+
+struct Opts {
+  numbers []int [split]
+}
+```
+
+The default separator is `,` (comma). If you need a different one, you can choose the separator by the same attribute. For example, you can supply two semicolon-delimited characters as `-c a;b` by the attribute `split`:
+
+```go
+usage := '...
+
+Options:
+  -c, --chars <char>  allowed characters
+
+...'
+
+struct Opts {
+  numbers []rune [split: ';']
+}
+```
+
 ## TODO
 
 This is a work in progress.
 
-* Support multi-value options (arrays).
 * Fix enclosing values of variables in `[` and `]`.
+* Fix using arrays of different types.
 
 [VPM]: https://vpm.vlang.io/packages/prantlf.jany
 [getopt and getopt_long]: https://en.wikipedia.org/wiki/Getopt

@@ -201,9 +201,14 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 	$for field in T.fields {
 		mut arg_name := field.name
 		mut nooverflow := false
+		mut sep := ''
 		for attr in field.attrs {
 			if attr.starts_with('arg: ') {
 				arg_name = attr[5..]
+			} else if attr.starts_with('split: ') {
+				sep = attr[7..]
+			} else if attr == 'split' {
+				sep = ','
 			} else if attr == 'nooverflow' {
 				nooverflow = true
 			}
@@ -233,14 +238,65 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 				cfg.$(field.name) = get_float[f32](val, ino)!
 			} $else $if field.typ is f64 || field.typ is ?f64 {
 				cfg.$(field.name) = get_float[f64](val, ino)!
+			// } $else $if field.typ is rune || field.typ is ?rune {
+			// 	cfg.$(field.name) = get_char[rune](val)!
+			// } $else $if field.typ is char || field.typ is ?char {
+			// 	cfg.$(field.name) = get_char[char](val)!
 			} $else $if field.typ is string || field.typ is ?string {
 				cfg.$(field.name) = val
 			} $else $if field.is_array {
-				cfg.$(field.name) = unmarshal_array(typ.$(field.name), val, opts)!
+				mut arr := cfg.$(field.name)
+				cfg.$(field.name) = add_val(mut arr, val, sep, ino)!
 			} $else {
-				return error('${opt.name()} uncompatible with ${type_name(field.typ)} of ${type_name(T.idx)}.${field.name}')
+				return error('${opt.name()} incompatible with ${type_name(field.typ)} of ${type_name(T.idx)}.${field.name}')
 			}
 		}
+	}
+}
+
+fn add_val[T](mut arr []T, val string, sep string, ignore_overflow bool) ![]T {
+	if sep.len > 0 {
+		vals := val.split(sep)
+		for item in vals {
+			arr << convert_val[T](item, ignore_overflow)!
+		}
+	} else {
+		arr << convert_val[T](val, ignore_overflow)!
+	}
+	return arr
+}
+
+fn convert_val[T](val string, ignore_overflow bool) !T {
+	$if T is int {
+		return get_int[int](val, ignore_overflow)!
+	} $else $if T is u8 {
+		return get_int[u8](val, ignore_overflow)!
+	} $else $if T is u16 {
+		return get_int[u16](val, ignore_overflow)!
+	} $else $if T is u32 {
+		return get_int[u32](val, ignore_overflow)!
+	} $else $if T is u64 {
+		return get_int[u64](val, ignore_overflow)!
+	} $else $if T is i8 {
+		return get_int[i8](val, ignore_overflow)!
+	} $else $if T is i16 {
+		return get_int[i16](val, ignore_overflow)!
+	} $else $if T is i64 {
+		return get_int[i64](val, ignore_overflow)!
+	} $else $if T is f32 {
+		return get_float[f32](val, ignore_overflow)!
+	} $else $if T is f64 {
+		return get_float[f64](val, ignore_overflow)!
+	// } $else $if T is rune {
+	// 	return get_char[rune](val)!
+	// } $else $if T is char {
+	// 	return get_char[char](val)!
+	} $else $if T is string {
+		return val
+	} $else $if T.is_enum {
+		return get_enum(val, T.idx)!
+	} $else {
+		return error('${val} cannot be converted to ${type_name(T.idx)}')
 	}
 }
 
@@ -253,7 +309,7 @@ fn set_flag[T](mut cfg T, opt Opt, flag bool) ! {
 			} $else $if field.typ is ?bool {
 				cfg.$(field.name) = flag
 			} $else {
-				return error('${opt.name()} uncompatible with flag ${type_name(T.idx)}.${field.name}')
+				return error('${opt.name()} incompatible with flag ${type_name(T.idx)}.${field.name}')
 			}
 		}
 	}
@@ -306,6 +362,13 @@ fn get_float[T](val string, ignore_overflow bool) !T {
 	}
 	return error('"${val}" is not a number')
 }
+
+// fn get_char[T](val string) !T {
+// 	if val.len != 1 {
+// 		return error('unable to convert "${val}" to a single character')
+// 	}
+// 	return val[0]
+// }
 
 fn (opt Opt) field_name() string {
 	name := if opt.long.len > 0 {

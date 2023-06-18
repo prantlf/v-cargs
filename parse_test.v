@@ -348,3 +348,96 @@ Options:
 	}
 	assert false
 }
+
+struct Array {
+	numbers []int
+}
+
+fn test_array_1() {
+	opts, args := parse[Array]('
+Options:
+  -n, --numbers <number>
+', Input{
+		args: ['-n', '1']
+	})!
+	assert opts.numbers == [1]
+}
+
+fn test_array_2() {
+	opts, args := parse[Array]('
+Options:
+  -n, --numbers <number>
+', Input{
+		args: ['-n', '1', '-n', '2']
+	})!
+	assert opts.numbers == [1, 2]
+}
+
+fn test_array_bad_type() {
+	parse[Array]('
+Options:
+  -n, --numbers <number>
+', Input{
+		args: ['-n', 'one']
+	}) or {
+		assert err.msg() == '"one" is not an integer'
+		return
+	}
+	assert false
+}
+
+struct DefaultSplit {
+	numbers []int [split]
+}
+
+fn test_array_split_default() {
+	opts, args := parse[DefaultSplit]('
+Options:
+  -n, --numbers <number>  a list of numbers to use
+', Input{
+		args: ['-n', '1,2']
+	})!
+	assert opts.numbers == [1, 2]
+}
+
+// struct CustomSplit {
+// 	chars []rune [split: ';']
+// }
+
+// fn test_array_split_custom() {
+// 	opts, args := parse[CustomSplit]('
+// Options:
+//   -c, --chars <char>  allowed characters
+// ', Input{
+// 		args: ['-c', 'a;b']
+// 	})!
+// 	assert opts.chars == [`a`, `b`]
+// }
+
+// struct CustomSplit {
+// 	chars []char [split: ';']
+// }
+
+// fn test_array_split_custom() {
+// 	opts, args := parse[CustomSplit]('
+// Options:
+//   -c, --chars <char>  allowed characters
+// ', Input{
+// 		args: ['-c', 'a;b']
+// 	})!
+// 	assert opts.chars == [char(`a`), char(`b`)]
+// }
+
+// struct CustomSplit {
+// 	chars []string [split: ';']
+// }
+
+// fn test_array_split_custom() {
+// 	opts, args := parse[CustomSplit]('
+// Options:
+//   -c, --chars <char>  allowed characters
+// ', Input{
+// 		args: ['-c', 'a;b']
+// 	})!
+// 	assert opts.chars == ['a', 'b']
+// }
