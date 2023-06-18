@@ -43,7 +43,7 @@ struct Opts {
 }
 
 // Parse command-line options and arguments.
-opts, args := parse[Opts]('', Input{ version: '0.0.1' })!
+opts, args := parse[Opts](usage, Input{ version: '0.0.1' })!
 if args.len > 0 {
   // Process file names from the args array.
 } else {
