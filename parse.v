@@ -16,19 +16,25 @@ pub mut:
 
 pub fn parse[T](usage string, input Input) !(T, []string) {
 	mut re_opt := regex.regex_opt('^-([^\\-])|(?:-([^ =]+))(?:\\s*=(.+))?$') or { panic(err) }
+
 	opts := analyse_usage(usage)
 	raw_args := input.args or { os.args[1..] }
 	args := split(opts, raw_args)
+
 	mut cfg := T{}
 	mut cmds := []string{}
+	mut applied := []Opt{}
+
 	l := args.len
 	mut i := 0
 	for i < l {
 		arg := args[i]
 		i++
+
 		if arg == '--' {
 			break
 		}
+
 		if arg.len > 1 && arg[0] == `-` {
 			match arg {
 				'-V', '--version' {
@@ -46,6 +52,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 				}
 				else {}
 			}
+
 			if !re_opt.matches_string(arg) {
 				return error('invalid argument "${arg}"')
 			}
@@ -57,6 +64,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 			} else {
 				return error('malformed argument "${arg}"')
 			}
+
 			if opt, flag := opts.find(name, input) {
 				if opt.val.len > 0 {
 					val := if grp_opt[2].start >= 0 {
@@ -76,6 +84,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 					}
 					set_flag(mut cfg, opt, flag)!
 				}
+				applied << opt
 			} else {
 				return error('unknown argument "${arg}"')
 			}
@@ -83,6 +92,9 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 			cmds << arg
 		}
 	}
+
+	check_applied(cfg, applied)!
+
 	for i < l {
 		cmds << args[i]
 		i++
@@ -93,6 +105,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 fn split(opts []Opt, raw_args []string) []string {
 	mut re_cond := regex.regex_opt('^-\\w+$') or { panic(err) }
 	mut args := []string{}
+
 	l := raw_args.len
 	mut i := 0
 	for i < l {
@@ -100,6 +113,7 @@ fn split(opts []Opt, raw_args []string) []string {
 		if arg == '--' {
 			break
 		}
+
 		i++
 		if arg.len > 1 && arg[0] == `-` && arg[1] != `-` {
 			if re_cond.matches_string(arg) {
@@ -111,6 +125,7 @@ fn split(opts []Opt, raw_args []string) []string {
 		}
 		args << arg
 	}
+
 	for i < l {
 		args << raw_args[i]
 		i++
@@ -126,6 +141,7 @@ fn (opts []Opt) find(arg string, input Input) ?(Opt, bool) {
 	} else {
 		arg
 	}
+
 	for opt in opts {
 		if name.len == 1 {
 			if name == opt.short {
@@ -143,11 +159,58 @@ fn (opts []Opt) find(arg string, input Input) ?(Opt, bool) {
 	return none
 }
 
+fn check_applied[T](cfg T, applied []Opt) ! {
+	mut valid := []Opt{}
+
+	$for field in T.fields {
+		mut arg_name := field.name
+		mut required := false
+		for attr in field.attrs {
+			if attr.starts_with('arg: ') {
+				arg_name = attr[5..]
+			} else if attr == 'required' {
+				required = true
+			}
+		}
+
+		mut found := false
+		for opt in applied {
+			name := opt.field_name()
+			if name == arg_name {
+				valid << opt
+				found = true
+				break
+			}
+		}
+
+		if required && !found {
+			return error('missing required ${arg_name}')
+		}
+	}
+	if valid.len != applied.len {
+		for opt in applied {
+			if opt !in valid {
+				return error('inappliccable argument ${opt.name()}')
+			}
+		}
+	}
+}
+
 fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 	name := opt.field_name()
-	ino := input.ignore_number_overflow
 	$for field in T.fields {
-		if field.name == name {
+		mut arg_name := field.name
+		mut nooverflow := false
+		for attr in field.attrs {
+			if attr.starts_with('arg: ') {
+				arg_name = attr[5..]
+			} else if attr == 'nooverflow' {
+				nooverflow = true
+			}
+		}
+
+		if name == arg_name {
+			ino := nooverflow || input.ignore_number_overflow
 			$if field.is_enum {
 				cfg.$(field.name) = get_enum(val, field.typ)!
 			} $else $if field.typ is int || field.typ is ?int {
@@ -254,6 +317,7 @@ fn (opt Opt) field_name() string {
 	} else {
 		opt.short
 	}
+
 	return if has_upper(name) {
 		name.to_lower()
 	} else {

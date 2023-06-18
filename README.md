@@ -2,6 +2,11 @@
 
 Parses command-line arguments to statically typed options or a string map with the help of usage description.
 
+* Legible configuration inferred from the usage instructions text.
+* Full control over the usage text.
+* Checks for unknown and required options, invalid value types and arithmetic overflow.
+* Compatibility with the [getopt and getopt_long] standards.
+
 ## Synopsis
 
 Specify usage description and version of the command-line tool. Declare a structure with all command-line options. Import the command-line parser and parse the options and arguments:
@@ -82,7 +87,7 @@ opts, args := parse[Opts](usage, Input{ version: '0.0.1' })!
 
 ### Usage Instructions
 
-The `usage` parameter is the formatted text to be prented as usage instructions. It's supposed to contain a line Starting with `Options:`, which is followed by likns listing the options:
+The `usage` parameter is the formatted text to be presented as usage instructions. It's supposed to contain a line Starting with `Options:`, which is followed by links listing the options:
 
     Options:
       -o|--output <file>  write the JSON output to a file
@@ -123,7 +128,7 @@ Assigning boolean flags or variable values to option fields may fail. For exampl
 * If there's no field with the long name of the option.
 * If the field type is boolean but the option isn't a boolean flag or vice versa.
 * If the field type isn't a string and the field value cannot be converted from the string value.
-* If the numeric field type is too small to accomodate the number converted from the string value.
+* If the numeric field type is too small to accommodate the number converted from the string value.
 
 ### Other Arguments
 
@@ -142,12 +147,59 @@ The following input fields are available:
 | `disable_short_negative` | `bool`      | `false`     | disables handling uppercase letters as negated options       |
 | `ignore_number_overflow` | `bool`      | `false`     | ignores an overflow when converting numbers to option fields |
 
+### Advanced
+
+If the transformation of options name to field name [described above](#options) is not enough, the argument name can be assigned to a specific field by the attribute `arg`. For example, set the command-line argument `type` to a field `typ`:
+
+```go
+usage := '...
+
+Options:
+  -t|--type <type>  file type (text or binary)
+
+...'
+
+struct Opts {
+  typ string [arg: @type]
+}
+```
+
+If you don't want to disable the checks for arithmetic overflow globally, but only for one field, it's possible by the attribute `nooverflow`. For example, set the command-line argument `type` to a field `typ`:
+
+```go
+usage := '...
+
+Options:
+  -r|--random <number>  the value to initialize random number generator with
+
+...'
+
+struct Opts {
+  random i16 [nooverflow]
+}
+```
+
+If you require some options to be always entered, it's possible by the attribute `required`. For example:
+
+```go
+usage := '...
+
+Options:
+  -f|--file <name>  the name of the output file
+
+...'
+
+struct Opts {
+  file string [required]
+}
+```
+
 ## TODO
 
 This is a work in progress.
 
-* Add a function to parse the options to a string-to-string map.
 * Support multi-value options (arrays).
-* Fix enclosing valuea of variables in `[` and `]`.
+* Fix enclosing values of variables in `[` and `]`.
 
 [VPM]: https://vpm.vlang.io/packages/prantlf.jany
+[getopt and getopt_long]: https://en.wikipedia.org/wiki/Getopt

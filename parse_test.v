@@ -266,7 +266,7 @@ Options:
 }
 
 fn test_unknown_arg() {
-	opts, args := parse[Integrals]('
+	parse[Integrals]('
 Options:
   --u8 <num>
 ', Input{ args: ['--u16=1'] }) or {
@@ -277,7 +277,7 @@ Options:
 }
 
 fn test_invalid_arg() {
-	opts, args := parse[Integrals]('
+	parse[Integrals]('
 Options:
   --u8 <num>
 ', Input{ args: ['-u8=1'] }) or {
@@ -288,7 +288,7 @@ Options:
 }
 
 fn test_missing_arg() {
-	opts, args := parse[Integrals]('
+	parse[Integrals]('
 Options:
   --u8 <num>
 ', Input{ args: ['--u8'] }) or {
@@ -299,11 +299,51 @@ Options:
 }
 
 fn test_extra_arg() {
-	opts, args := parse[Positives]('
+	parse[Positives]('
 Options:
   -b
 ', Input{ args: ['-b=test'] }) or {
 		assert err.msg() == 'extra value of "-b=test"'
+		return
+	}
+	assert false
+}
+
+struct Renamed {
+	typ string [arg: @type]
+}
+
+fn test_rename_arg() {
+	opts, args := parse[Renamed]('
+Options:
+  -t|--type <type>  file type (textual or binary)
+',
+		Input{ args: ['-t', 'text'] })!
+	assert opts.typ == 'text'
+}
+
+struct Required {
+	typ string [arg: @type; required]
+}
+
+fn test_required_arg() {
+	parse[Required]('
+Options:
+  -t|--type <type>  file type (textual or binary)
+', Input{ args: [] }) or {
+		assert err.msg() == 'missing required type'
+		return
+	}
+	assert false
+}
+
+fn test_inapplicable_arg() {
+	parse[Positives]('
+Options:
+  -p|--pretty  prints the JSON output with line breaks and indented
+',
+		Input{ args: ['-p'] }) or {
+		assert err.msg() == 'inappliccable argument p|pretty'
 		return
 	}
 	assert false
