@@ -1,9 +1,10 @@
+# Changes
+
 ## [0.0.5](https://github.com/prantlf/v-cargs/compare/v0.0.4...v0.0.5) (2023-06-18)
 
 ### Features
 
 * Support multiple values for a single option as arrays ([e6ef54a](https://github.com/prantlf/v-cargs/commit/e6ef54aed475d7bf4511b32e84c468e58aa412f5))
-
 
 ## [0.0.4](https://github.com/prantlf/v-cargs/compare/v0.0.3...v0.0.4) (2023-06-18)
 

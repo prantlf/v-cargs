@@ -1,2 +1,9 @@
+.DS_Store
+analyse_test
+analyse_test.dSYM
+help_test
+help_test.dSYM
 parse_test
 parse_test.dSYM
+version_test
+version_test.dSYM

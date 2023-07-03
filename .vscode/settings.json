@@ -1,3 +1,14 @@
 {
-  "cmake.configureOnOpen": false
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/analyse_test": true,
+    "**/analyse_test.dSYM": true,
+    "**/help_test": true,
+    "**/help_test.dSYM": true,
+    "**/parse_test": true,
+    "**/parse_test.dSYM": true,
+    "**/version_test": true,
+    "**/version_test.dSYM": true
+  }
 }

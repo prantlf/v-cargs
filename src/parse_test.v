@@ -394,7 +394,8 @@ fn test_array_split_default() {
 	opts, args := parse[DefaultSplit]('
 Options:
   -n, --numbers <number>  a list of numbers to use
-', Input{
+',
+		Input{
 		args: ['-n', '1,2']
 	})!
 	assert opts.numbers == [1, 2]

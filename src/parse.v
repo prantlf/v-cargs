@@ -238,10 +238,10 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 				cfg.$(field.name) = get_float[f32](val, ino)!
 			} $else $if field.typ is f64 || field.typ is ?f64 {
 				cfg.$(field.name) = get_float[f64](val, ino)!
-			// } $else $if field.typ is rune || field.typ is ?rune {
-			// 	cfg.$(field.name) = get_char[rune](val)!
-			// } $else $if field.typ is char || field.typ is ?char {
-			// 	cfg.$(field.name) = get_char[char](val)!
+				// } $else $if field.typ is rune || field.typ is ?rune {
+				// 	cfg.$(field.name) = get_char[rune](val)!
+				// } $else $if field.typ is char || field.typ is ?char {
+				// 	cfg.$(field.name) = get_char[char](val)!
 			} $else $if field.typ is string || field.typ is ?string {
 				cfg.$(field.name) = val
 			} $else $if field.is_array {
@@ -287,10 +287,10 @@ fn convert_val[T](val string, ignore_overflow bool) !T {
 		return get_float[f32](val, ignore_overflow)!
 	} $else $if T is f64 {
 		return get_float[f64](val, ignore_overflow)!
-	// } $else $if T is rune {
-	// 	return get_char[rune](val)!
-	// } $else $if T is char {
-	// 	return get_char[char](val)!
+		// } $else $if T is rune {
+		// 	return get_char[rune](val)!
+		// } $else $if T is char {
+		// 	return get_char[char](val)!
 	} $else $if T is string {
 		return val
 	} $else $if T.is_enum {
