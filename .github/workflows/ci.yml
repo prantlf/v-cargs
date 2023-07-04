@@ -22,5 +22,5 @@ jobs:
     - name: Test
       run: |
         v test .
-        v run help_test.v
-        v test version_test.v
+        v run src/help_test.v
+        v test src/version_test.v
