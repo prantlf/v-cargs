@@ -19,7 +19,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 
 	opts := analyse_usage(usage)
 	raw_args := input.args or { os.args[1..] }
-	args := split(opts, raw_args)
+	args := split_short_opts(opts, raw_args)
 
 	mut cfg := T{}
 	mut cmds := []string{}
@@ -102,7 +102,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 	return cfg, cmds
 }
 
-fn split(opts []Opt, raw_args []string) []string {
+fn split_short_opts(opts []Opt, raw_args []string) []string {
 	mut re_cond := regex.regex_opt('^-\\w+$') or { panic(err) }
 	mut args := []string{}
 

@@ -60,11 +60,10 @@ Options:
 	assert opts[0].val == 'file'
 }
 
-// TODO: Use [file] here
 fn test_long_val() {
 	opts := analyse_usage('
 Options:
-  --output <file>  write the JSON output to a file
+  --output [file]  write the JSON output to a file
 ')
 	assert opts.len == 1
 	assert opts[0].short == ''

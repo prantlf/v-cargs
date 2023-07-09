@@ -208,11 +208,10 @@ Options:
 	assert args == []
 }
 
-// TODO: Use [enum] here
 fn test_wrong_enum() {
 	parse[Integrals]('
 Options:
-  --human <enum>
+  --human [enum]
 ', Input{ args: ['--human', 'dummy'] }) or {
 		assert err.msg() == '"dummy"" not in Human enum'
 		return

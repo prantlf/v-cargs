@@ -10,7 +10,7 @@ mut:
 }
 
 fn analyse_usage(text string) []Opt {
-	mut re_opt := regex.regex_opt('^\\s*-([^\\-])?(?:[|,]\\s*-)?(?:-([^ ]+))?(?:\\s+[<\\]]([^>\\]]+)[>\\]])?') or {
+	mut re_opt := regex.regex_opt('^\\s*-([^\\-])?(?:[|,]\\s*-)?(?:-([^ ]+))?(?:\\s+[<\\[]([^>\\]]+)[>\\]])?') or {
 		panic(err)
 	}
 	mut opts := []Opt{}
