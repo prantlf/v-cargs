@@ -1,5 +1,11 @@
 # Changes
 
+## [0.0.6](https://github.com/prantlf/v-cargs/compare/v0.0.5...v0.0.6) (2023-07-09)
+
+### Bug Fixes
+
+* Accept brackets to enclose parameters names too ([3af198b](https://github.com/prantlf/v-cargs/commit/3af198b0f13a7bf5a3c3735f3d461df00362759c))
+
 ## [0.0.5](https://github.com/prantlf/v-cargs/compare/v0.0.4...v0.0.5) (2023-06-18)
 
 ### Features

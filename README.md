@@ -243,8 +243,9 @@ struct Opts {
 
 This is a work in progress.
 
-* Fix enclosing values of variables in `[` and `]`.
-* Fix using arrays of different types.
+* Add a string map as the parsing target.
+* Allow using arrays of different types once it is fixed in V (#18823).
 
 [VPM]: https://vpm.vlang.io/packages/prantlf.jany
 [getopt and getopt_long]: https://en.wikipedia.org/wiki/Getopt
+[#18823]: https://github.com/vlang/v/issues/18823
