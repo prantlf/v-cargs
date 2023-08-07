@@ -85,6 +85,10 @@ struct Opts {
 opts, args := parse[Opts](usage, Input{ version: '0.0.1' })!
 ```
 
+### parse_to[T](usage string, input Input, mut opts T) ![]string
+
+Parses the command line, separating options and other arguments, while setting the field values in an already created object. It can be used to override options initially read from configuration file from the command-line, for example. See [prantlf.config] for more information.
+
 ### Usage Instructions
 
 The `usage` parameter is the formatted text to be presented as usage instructions. It's supposed to contain a line Starting with `Options:`, which is followed by links listing the options:
@@ -244,8 +248,7 @@ struct Opts {
 This is a work in progress.
 
 * Add a string map as the parsing target.
-* Allow using arrays of different types once it is fixed in V ([#18823]).
 
-[VPM]: https://vpm.vlang.io/packages/prantlf.jany
+[VPM]: https://vpm.vlang.io/packages/prantlf.cargs
 [getopt and getopt_long]: https://en.wikipedia.org/wiki/Getopt
-[#18823]: https://github.com/vlang/v/issues/18823
+[prantlf.config]: https://github.com/prantlf/v-config

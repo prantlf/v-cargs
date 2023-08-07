@@ -14,14 +14,21 @@ pub mut:
 	ignore_number_overflow bool
 }
 
-pub fn parse[T](usage string, input Input) !(T, []string) {
+pub fn parse[T](usage string, input &Input) !(&T, []string) {
+	d.log_str('parse command-line usage and create options')
+	mut cfg := &T{}
+	cmds := parse_to(usage, input, mut cfg)!
+	return cfg, cmds
+}
+
+pub fn parse_to[T](usage string, input &Input, mut cfg &T) ![]string {
+	d.log_str('parse command-line usage and fill options')
 	mut re_opt := regex.regex_opt('^-([^\\-])|(?:-([^ =]+))(?:\\s*=(.+))?$') or { panic(err) }
 
 	opts := analyse_usage(usage)
 	raw_args := input.args or { os.args[1..] }
 	args := split_short_opts(opts, raw_args)
 
-	mut cfg := T{}
 	mut cmds := []string{}
 	mut applied := []Opt{}
 
@@ -32,6 +39,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 		i++
 
 		if arg == '--' {
+			d.log_str('argument separator detected')
 			break
 		}
 
@@ -64,6 +72,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 			} else {
 				return error('malformed argument "${arg}"')
 			}
+			d.log('option "%s" detected', name)
 
 			if opt, flag := opts.find(name, input) {
 				if opt.val.len > 0 {
@@ -77,16 +86,20 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 						i++
 						args[idx]
 					}
+					d.log('value "%s" used', val)
 					set_val(mut cfg, opt, val, input)!
 				} else {
 					if grp_opt[2].start >= 0 {
 						return error('extra value of "${arg}"')
 					}
+					if d.is_enabled() {
+						d.log_str('flag "${flag}" used')
+					}
 					set_flag(mut cfg, opt, flag)!
 				}
 				applied << opt
 			} else {
-				return error('unknown argument "${arg}"')
+				return error('unknown option "${arg}"')
 			}
 		} else {
 			cmds << arg
@@ -99,7 +112,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 		cmds << args[i]
 		i++
 	}
-	return cfg, cmds
+	return cmds
 }
 
 fn split_short_opts(opts []Opt, raw_args []string) []string {
@@ -117,10 +130,13 @@ fn split_short_opts(opts []Opt, raw_args []string) []string {
 		i++
 		if arg.len > 1 && arg[0] == `-` && arg[1] != `-` {
 			if re_cond.matches_string(arg) {
+				d.log('splitting "%s" to separate options', arg)
 				for j := 1; j < arg.len; j++ {
 					args << '-${rune(arg[j])}'
 				}
 				continue
+			} else {
+				d.log('keeping "%s" as single option', arg)
 			}
 		}
 		args << arg
@@ -172,6 +188,15 @@ fn check_applied[T](cfg T, applied []Opt) ! {
 				required = true
 			}
 		}
+		if d.is_enabled() {
+			not_required := if required {
+				''
+			} else {
+				'not '
+			}
+			d.log('checking field "%s", a %srequired argument "%s"', field.name, not_required,
+				arg_name)
+		}
 
 		mut found := false
 		for opt in applied {
@@ -216,8 +241,26 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 
 		if name == arg_name {
 			ino := nooverflow || input.ignore_number_overflow
+
+			if d.is_enabled() {
+				if d.is_enabled() {
+					split := if sep.len > 0 {
+						'split with "${sep}"'
+					} else {
+						'no splitting'
+					}
+					overflow := if nooverflow {
+						'ignored'
+					} else {
+						'checked'
+					}
+					d.log_str('setting value field "${field.name}" using argument "${arg_name}", ${split}, overflow ${overflow}')
+				}
+			}
+
 			$if field.is_enum {
-				cfg.$(field.name) = get_enum(val, field.typ)!
+				orig_val := cfg.$(field.name)
+				cfg.$(field.name) = get_enum(val, orig_val)!
 			} $else $if field.typ is int || field.typ is ?int {
 				cfg.$(field.name) = get_int[int](val, ino)!
 			} $else $if field.typ is u8 || field.typ is ?u8 {
@@ -294,7 +337,8 @@ fn convert_val[T](val string, ignore_overflow bool) !T {
 	} $else $if T is string {
 		return val
 	} $else $if T.is_enum {
-		return get_enum(val, T.idx)!
+		orig_val := cfg.$(field.name)
+		return get_enum(val, orig_val)!
 	} $else {
 		return error('${val} cannot be converted to ${type_name(T.idx)}')
 	}
@@ -303,7 +347,17 @@ fn convert_val[T](val string, ignore_overflow bool) !T {
 fn set_flag[T](mut cfg T, opt Opt, flag bool) ! {
 	name := opt.field_name()
 	$for field in T.fields {
-		if field.name == name {
+		mut arg_name := field.name
+		for attr in field.attrs {
+			if attr.starts_with('arg: ') {
+				arg_name = attr[5..]
+			}
+		}
+
+		if name == arg_name {
+			if d.is_enabled() {
+				d.log_str('setting flag "${name}" using argument "${arg_name}" to "${flag}"')
+			}
 			$if field.typ is bool {
 				cfg.$(field.name) = flag
 			} $else $if field.typ is ?bool {
@@ -315,16 +369,16 @@ fn set_flag[T](mut cfg T, opt Opt, flag bool) ! {
 	}
 }
 
-fn get_enum(val string, typ int) !int {
+fn get_enum[T](val string, orig_val T) !T {
 	if num := strconv.atoi(val) {
-		return num
+		return unsafe { T(num) }
 	} else {
-		enums := enum_vals(typ)!
+		enums := enum_vals(T.idx)!
 		idx := enums.index(val)
 		if idx >= 0 {
-			return idx
+			return unsafe { T(idx) }
 		} else {
-			return error('"${val}"" not in ${type_name(typ)} enum')
+			return error('"${val}" not in ${type_name(T.idx)} enum')
 		}
 	}
 }
@@ -344,8 +398,14 @@ fn enum_vals(idx int) ![]string {
 fn get_int[T](val string, ignore_overflow bool) !T {
 	if num := strconv.atoi(val) {
 		i := T(num)
-		if !ignore_overflow && num != i {
-			return error('unable to convert "${num}" to ${T.name}')
+		if num != i {
+			if ignore_overflow {
+				if d.is_enabled() {
+					d.log_str('forcing conversion of "${num}" to "${i}')
+				}
+			} else {
+				return error('unable to convert "${num}" to ${T.name}')
+			}
 		}
 		return i
 	}
@@ -355,8 +415,14 @@ fn get_int[T](val string, ignore_overflow bool) !T {
 fn get_float[T](val string, ignore_overflow bool) !T {
 	if num := strconv.atof64(val) {
 		f := T(num)
-		if !ignore_overflow && num - f64(f) > math.smallest_non_zero_f64 {
-			return error('unable to convert "${num}" to ${T.name}')
+		if num - f64(f) > math.smallest_non_zero_f64 {
+			if ignore_overflow {
+				if d.is_enabled() {
+					d.log_str('forcing conversion of "${num}" to "${f}')
+				}
+			} else {
+				return error('unable to convert "${num}" to ${T.name}')
+			}
 		}
 		return f
 	}

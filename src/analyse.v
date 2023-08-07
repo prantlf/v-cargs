@@ -1,6 +1,9 @@
 module cargs
 
 import regex
+import prantlf.debug { new_debug }
+
+const d = new_debug('cargs')
 
 struct Opt {
 mut:
@@ -22,6 +25,7 @@ fn analyse_usage(text string) []Opt {
 				break
 			}
 			if re_opt.matches_string(line) {
+				cargs.d.log('option matched: "%s"', line)
 				grp_opt := re_opt.get_group_list()
 				mut opt := Opt{}
 				if grp_opt[0].start >= 0 {
@@ -33,10 +37,25 @@ fn analyse_usage(text string) []Opt {
 				if grp_opt[2].start >= 0 {
 					opt.val = line[grp_opt[2].start..grp_opt[2].end]
 				}
+				cargs.d.log('option short: "%s", long: "%s", value: "%s"', opt.short,
+					opt.long, opt.val)
 				opts << opt
+			} else {
+				cargs.d.log('option not matched: "%s"', line)
 			}
 		} else if line.contains('Options:') {
 			in_opts = true
+		}
+	}
+	if cargs.d.is_enabled() {
+		if in_opts {
+			if opts.len == 0 {
+				cargs.d.log_str('no options detected')
+			} else {
+				cargs.d.log('%d options detected', opts.len)
+			}
+		} else {
+			cargs.d.log_str('no options detected')
 		}
 	}
 	return opts

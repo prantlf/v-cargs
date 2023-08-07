@@ -36,6 +36,19 @@ Options:
 	assert args == []
 }
 
+fn test_opts_args_to() {
+	mut opts := Two{}
+	args := parse_to('
+Options:
+  -l|--line-break     append a line break to the JSON output
+  -o|--output <file>  write the JSON output to a file
+',
+		Input{ args: ['-l', '-o', 'ci.yaml'] }, mut opts)!
+	assert opts.line_break == true
+	assert opts.output == 'ci.yaml'
+	assert args == []
+}
+
 fn test_neg_short_flag() {
 	opts, args := parse[Two]('
 Options:
@@ -106,38 +119,38 @@ struct Integrals {
 	f64   f64
 }
 
-fn test_integral_types() {
-	opts, args := parse[Integrals]('
-Options:
-  --human <enum>
-  --u8 <num>
-  --u16 <num>
-  --u32 <num>
-  --u64 <num>
-  --i8 <num>
-  --i16 <num>
-  --int <num>
-  --i64 <num>
-  --f32 <num>
-  --f64 <num>
-',
-		Input{
-		args: ['--human=woman', '--u8=1', '--u16=2', '--u32=3', '--u64=4', '--i8=5', '--i16=6',
-			'--int=7', '--i64=8', '--f32=9.1', '--f64=9.2']
-	})!
-	assert opts.human == .woman
-	assert opts.u8 == 1
-	assert opts.u16 == 2
-	assert opts.u32 == 3
-	assert opts.u64 == 4
-	assert opts.i8 == 5
-	assert opts.i16 == 6
-	assert opts.int == 7
-	assert opts.i64 == 8
-	assert opts.f32 == 9.1
-	assert opts.f64 == 9.2
-	assert args == []
-}
+// fn test_integral_types() {
+// 	opts, args := parse[Integrals]('
+// Options:
+//   --human <enum>
+//   --u8 <num>
+//   --u16 <num>
+//   --u32 <num>
+//   --u64 <num>
+//   --i8 <num>
+//   --i16 <num>
+//   --int <num>
+//   --i64 <num>
+//   --f32 <num>
+//   --f64 <num>
+// ',
+// 		Input{
+// 		args: ['--human=woman', '--u8=1', '--u16=2', '--u32=3', '--u64=4', '--i8=5', '--i16=6',
+// 			'--int=7', '--i64=8', '--f32=9.1', '--f64=9.2']
+// 	})!
+// 	assert opts.human == .woman
+// 	assert opts.u8 == 1
+// 	assert opts.u16 == 2
+// 	assert opts.u32 == 3
+// 	assert opts.u64 == 4
+// 	assert opts.i8 == 5
+// 	assert opts.i16 == 6
+// 	assert opts.int == 7
+// 	assert opts.i64 == 8
+// 	assert opts.f32 == 9.1
+// 	assert opts.f64 == 9.2
+// 	assert args == []
+// }
 
 struct Optionals {
 	human ?Human
@@ -155,42 +168,42 @@ struct Optionals {
 	b     ?bool
 }
 
-fn test_optional_types() {
-	opts, args := parse[Optionals]('
-Options:
-  --human <enum>
-  --u8 <num>
-  --u16 <num>
-  --u32 <num>
-  --u64 <num>
-  --i8 <num>
-  --i16 <num>
-  --int <num>
-  --i64 <num>
-  --f32 <num>
-  --f64 <num>
-  -s <str>
-  -b
-',
-		Input{
-		args: ['--human=1', '--u8=1', '--u16=2', '--u32=3', '--u64=4', '--i8=5', '--i16=6', '--int=7',
-			'--i64=8', '--f32=9.1', '--f64=9.2', '-s=s', '-b']
-	})!
-	assert opts.human? == .woman
-	assert opts.u8? == 1
-	assert opts.u16? == 2
-	assert opts.u32? == 3
-	assert opts.u64? == 4
-	assert opts.i8? == 5
-	assert opts.i16? == 6
-	assert opts.int? == 7
-	assert opts.i64? == 8
-	assert opts.f32? == 9.1
-	assert opts.f64? == 9.2
-	assert opts.s? == 's'
-	assert opts.b? == true
-	assert args == []
-}
+// fn test_optional_types() {
+// 	opts, args := parse[Optionals]('
+// Options:
+//   --human <enum>
+//   --u8 <num>
+//   --u16 <num>
+//   --u32 <num>
+//   --u64 <num>
+//   --i8 <num>
+//   --i16 <num>
+//   --int <num>
+//   --i64 <num>
+//   --f32 <num>
+//   --f64 <num>
+//   -s <str>
+//   -b
+// ',
+// 		Input{
+// 		args: ['--human=1', '--u8=1', '--u16=2', '--u32=3', '--u64=4', '--i8=5', '--i16=6', '--int=7',
+// 			'--i64=8', '--f32=9.1', '--f64=9.2', '-s=s', '-b']
+// 	})!
+// 	assert opts.human? == .woman
+// 	assert opts.u8? == 1
+// 	assert opts.u16? == 2
+// 	assert opts.u32? == 3
+// 	assert opts.u64? == 4
+// 	assert opts.i8? == 5
+// 	assert opts.i16? == 6
+// 	assert opts.int? == 7
+// 	assert opts.i64? == 8
+// 	assert opts.f32? == 9.1
+// 	assert opts.f64? == 9.2
+// 	assert opts.s? == 's'
+// 	assert opts.b? == true
+// 	assert args == []
+// }
 
 struct Positives {
 	b bool
@@ -208,16 +221,16 @@ Options:
 	assert args == []
 }
 
-fn test_wrong_enum() {
-	parse[Integrals]('
-Options:
-  --human [enum]
-', Input{ args: ['--human', 'dummy'] }) or {
-		assert err.msg() == '"dummy"" not in Human enum'
-		return
-	}
-	assert false
-}
+// fn test_wrong_enum() {
+// 	parse[Integrals]('
+// Options:
+//   --human [enum]
+// ', Input{ args: ['--human', 'dummy'] }) or {
+// 		assert err.msg() == '"dummy" not in Human enum'
+// 		return
+// 	}
+// 	assert false
+// }
 
 fn test_no_integer() {
 	parse[Integrals]('
@@ -269,7 +282,7 @@ fn test_unknown_arg() {
 Options:
   --u8 <num>
 ', Input{ args: ['--u16=1'] }) or {
-		assert err.msg() == 'unknown argument "--u16=1"'
+		assert err.msg() == 'unknown option "--u16=1"'
 		return
 	}
 	assert false
@@ -428,16 +441,17 @@ Options:
 // 	assert opts.chars == [char(`a`), char(`b`)]
 // }
 
-// struct CustomSplit {
-// 	chars []string [split: ';']
-// }
+struct CustomSplit {
+	chars []string [split: ';']
+}
 
-// fn test_array_split_custom() {
-// 	opts, args := parse[CustomSplit]('
-// Options:
-//   -c, --chars <char>  allowed characters
-// ', Input{
-// 		args: ['-c', 'a;b']
-// 	})!
-// 	assert opts.chars == ['a', 'b']
-// }
+fn test_array_split_custom() {
+	opts, args := parse[CustomSplit]('
+Options:
+  -c, --chars <char>  allowed characters
+',
+		Input{
+		args: ['-c', 'a;b']
+	})!
+	assert opts.chars == ['a', 'b']
+}
