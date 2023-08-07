@@ -1,5 +1,11 @@
 # Changes
 
+## [0.1.0](https://github.com/prantlf/v-cargs/compare/v0.0.6...v0.1.0) (2023-08-07)
+
+### Features
+
+* Add parse_to to fill an existing struct ([3b395b2](https://github.com/prantlf/v-cargs/commit/3b395b270c8918b36c258883fd95e531efa87707))
+
 ## [0.0.6](https://github.com/prantlf/v-cargs/compare/v0.0.5...v0.0.6) (2023-07-09)
 
 ### Bug Fixes
