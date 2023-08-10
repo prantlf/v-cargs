@@ -5,6 +5,7 @@ import math
 import regex
 import strconv
 import v.reflection
+import prantlf.strutil { replace_u8 }
 
 pub struct Input {
 pub mut:
@@ -21,7 +22,7 @@ pub fn parse[T](usage string, input &Input) !(&T, []string) {
 	return cfg, cmds
 }
 
-pub fn parse_to[T](usage string, input &Input, mut cfg &T) ![]string {
+pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 	d.log_str('parse command-line usage and fill options')
 	mut re_opt := regex.regex_opt('^-([^\\-])|(?:-([^ =]+))(?:\\s*=(.+))?$') or { panic(err) }
 
@@ -439,7 +440,7 @@ fn get_float[T](val string, ignore_overflow bool) !T {
 fn (opt Opt) field_name() string {
 	name := if opt.long.len > 0 {
 		if opt.long.contains_u8(`-`) {
-			opt.long.replace_char(`-`, `_`, 1)
+			replace_u8(opt.long, `-`, `_`)
 		} else {
 			opt.long
 		}
