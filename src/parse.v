@@ -2,9 +2,9 @@ module cargs
 
 import os
 import math
-import regex
 import strconv
 import v.reflection
+import prantlf.pcre { NoMatch, pcre_compile }
 import prantlf.strutil { replace_u8 }
 
 pub struct Input {
@@ -24,11 +24,11 @@ pub fn parse[T](usage string, input &Input) !(&T, []string) {
 
 pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 	d.log_str('parse command-line usage and fill options')
-	mut re_opt := regex.regex_opt('^-([^\\-])|(?:-([^ =]+))(?:\\s*=(.+))?$') or { panic(err) }
+	re_opt := pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0)!
 
 	opts := analyse_usage(usage)
 	raw_args := input.args or { os.args[1..] }
-	args := split_short_opts(opts, raw_args)
+	args := split_short_opts(opts, raw_args)!
 
 	mut cmds := []string{}
 	mut applied := []Opt{}
@@ -62,14 +62,16 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 				else {}
 			}
 
-			if !re_opt.matches_string(arg) {
-				return error('invalid argument "${arg}"')
+			m := re_opt.exec(arg, 0) or {
+				if err is NoMatch {
+					return error('invalid argument "${arg}"')
+				}
+				return err
 			}
-			grp_opt := re_opt.get_group_list()
-			name := if grp_opt[0].start >= 0 {
-				arg[grp_opt[0].start..grp_opt[0].end]
-			} else if grp_opt[1].start >= 0 {
-				arg[grp_opt[1].start..grp_opt[1].end]
+			name := if start, end := m.group_bounds(1) {
+				arg[start..end]
+			} else if start, end := m.group_bounds(2) {
+				arg[start..end]
 			} else {
 				return error('malformed argument "${arg}"')
 			}
@@ -77,8 +79,8 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 
 			if opt, flag := opts.find(name, input) {
 				if opt.val.len > 0 {
-					val := if grp_opt[2].start >= 0 {
-						arg[grp_opt[2].start..grp_opt[2].end]
+					val := if start, end := m.group_bounds(3) {
+						arg[start..end]
 					} else {
 						if i == l {
 							return error('missing value of "${arg}"')
@@ -90,7 +92,7 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 					d.log('value "%s" used', val)
 					set_val(mut cfg, opt, val, input)!
 				} else {
-					if grp_opt[2].start >= 0 {
+					if _, _ := m.group_bounds(3) {
 						return error('extra value of "${arg}"')
 					}
 					if d.is_enabled() {
@@ -116,8 +118,8 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 	return cmds
 }
 
-fn split_short_opts(opts []Opt, raw_args []string) []string {
-	mut re_cond := regex.regex_opt('^-\\w+$') or { panic(err) }
+fn split_short_opts(opts []Opt, raw_args []string) ![]string {
+	re_cond := pcre_compile(r'^-\w+$', 0)!
 	mut args := []string{}
 
 	l := raw_args.len
@@ -130,7 +132,7 @@ fn split_short_opts(opts []Opt, raw_args []string) []string {
 
 		i++
 		if arg.len > 1 && arg[0] == `-` && arg[1] != `-` {
-			if re_cond.matches_string(arg) {
+			if re_cond.matches(arg, 0)! {
 				d.log('splitting "%s" to separate options', arg)
 				for j := 1; j < arg.len; j++ {
 					args << '-${rune(arg[j])}'
