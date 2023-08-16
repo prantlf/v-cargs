@@ -1,5 +1,11 @@
 # Changes
 
+## [0.2.0](https://github.com/prantlf/v-cargs/compare/v0.1.0...v0.2.0) (2023-08-16)
+
+### Features
+
+* Swap regex with prantlf.pcre ([8e74fac](https://github.com/prantlf/v-cargs/commit/8e74fac503a45b64f4102b4941295f567431b2bb))
+
 ## [0.1.0](https://github.com/prantlf/v-cargs/compare/v0.0.6...v0.1.0) (2023-08-07)
 
 ### Features
