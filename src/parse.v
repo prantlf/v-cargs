@@ -68,7 +68,7 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 				}
 				return err
 			}
-			name := if start, end := m.group_bounds(1) {
+			mut name := if start, end := m.group_bounds(1) {
 				arg[start..end]
 			} else if start, end := m.group_bounds(2) {
 				arg[start..end]

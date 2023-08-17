@@ -5,6 +5,11 @@ struct Two {
 	output     string
 }
 
+struct TwoTrue {
+	line_break bool = true
+	output     string
+}
+
 fn test_no_opts_no_args() {
 	opts, args := parse[Two]('', Input{ args: [] })!
 	assert opts.line_break == false
@@ -63,6 +68,16 @@ fn test_neg_long_flag() {
 	opts, args := parse[Two]('
 Options:
   -l|--line-break  append a line break to the JSON output
+',
+		Input{ args: ['--no-line-break'] })!
+	assert opts.line_break == false
+	assert args == []
+}
+
+fn test_neg_long_flag_declaration() {
+	opts, args := parse[TwoTrue]('
+Options:
+  --no-line-break  append a line break to the JSON output
 ',
 		Input{ args: ['--no-line-break'] })!
 	assert opts.line_break == false

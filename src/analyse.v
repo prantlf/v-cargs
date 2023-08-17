@@ -37,8 +37,15 @@ fn analyse_usage(text string) []Opt {
 				if grp_opt[2].start >= 0 {
 					opt.val = line[grp_opt[2].start..grp_opt[2].end]
 				}
-				cargs.d.log('option short: "%s", long: "%s", value: "%s"', opt.short,
-					opt.long, opt.val)
+				if opt.long.starts_with('no-') {
+					orig_name := opt.long
+					opt.long = opt.long[3..]
+					cargs.d.log('option short: "%s", long: "%s" (originally "%s"), value: "%s"',
+						opt.short, opt.long, orig_name, opt.val)
+				} else {
+					cargs.d.log('option short: "%s", long: "%s", value: "%s"', opt.short,
+						opt.long, opt.val)
+				}
 				opts << opt
 			} else {
 				cargs.d.log('option not matched: "%s"', line)

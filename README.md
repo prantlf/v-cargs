@@ -106,6 +106,10 @@ An option-line can contain a short (single-letter) option, a long option or both
 
 Short and long option variants can be delimited either by `|` or by `,`, which can be followed by a space. A value of a variable can be enclose either in `<` and `>`, or in `[` and `]`.
 
+If a negative option is entered, the field in the options structure has to be still positive - without the `no_` prefix. This is usually used to declare flags, which are enabled by default and can be disabled by the negative option:
+
+    --no-line-breaks  a boolean flag, long variant only
+
 ### Options
 
 Two command-line options will be recognised and processed by the `parse` function itself:
