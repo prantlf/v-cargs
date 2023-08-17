@@ -1,5 +1,11 @@
 # Changes
 
+## [0.3.0](https://github.com/prantlf/v-cargs/compare/v0.2.0...v0.3.0) (2023-08-17)
+
+### Features
+
+* Allow specifing --no-* options in the usage ([029920d](https://github.com/prantlf/v-cargs/commit/029920d4ffde41d2ec3b814743bc1c446cee5279))
+
 ## [0.2.0](https://github.com/prantlf/v-cargs/compare/v0.1.0...v0.2.0) (2023-08-16)
 
 ### Features
