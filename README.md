@@ -169,6 +169,7 @@ The following input fields are available:
 | `args`                   | `?[]string` | `none`      | raw command-line arguments, defaults to `os.args[1..]`       |
 | `disable_short_negative` | `bool`      | `false`     | disables handling uppercase letters as negated options       |
 | `ignore_number_overflow` | `bool`      | `false`     | ignores an overflow when converting numbers to option fields |
+| `options_anywhere`       | `bool`      | `false`     | do not look for options only after the line with `Options:`  |
 
 ### Advanced
 

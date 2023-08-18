@@ -54,6 +54,14 @@ Options:
 	assert args == []
 }
 
+fn test_no_options_line() {
+	opts, args := parse[Two]('
+  -l|--line-break     append a line break to the JSON output
+',
+		Input{ args: ['-l'], options_anywhere: true })!
+	assert opts.line_break == true
+}
+
 fn test_neg_short_flag() {
 	opts, args := parse[Two]('
 Options:

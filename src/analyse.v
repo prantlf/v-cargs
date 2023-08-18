@@ -12,7 +12,7 @@ mut:
 	val   string
 }
 
-fn analyse_usage(text string) []Opt {
+fn analyse_usage(text string, anywhere bool) []Opt {
 	mut re_opt := regex.regex_opt('^\\s*-([^\\-])?(?:[|,]\\s*-)?(?:-([^ ]+))?(?:\\s+[<\\[]([^>\\]]+)[>\\]])?') or {
 		panic(err)
 	}
@@ -20,8 +20,8 @@ fn analyse_usage(text string) []Opt {
 	mut in_opts := false
 	lines := text.split_into_lines()
 	for line in lines {
-		if in_opts {
-			if line.len == 0 {
+		if in_opts || anywhere {
+			if line.len == 0 && !anywhere {
 				break
 			}
 			if re_opt.matches_string(line) {
@@ -55,14 +55,10 @@ fn analyse_usage(text string) []Opt {
 		}
 	}
 	if cargs.d.is_enabled() {
-		if in_opts {
-			if opts.len == 0 {
-				cargs.d.log_str('no options detected')
-			} else {
-				cargs.d.log('%d options detected', opts.len)
-			}
-		} else {
+		if opts.len == 0 {
 			cargs.d.log_str('no options detected')
+		} else {
+			cargs.d.log('%d options detected', opts.len)
 		}
 	}
 	return opts

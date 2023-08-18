@@ -13,6 +13,7 @@ pub mut:
 	args                   ?[]string
 	disable_short_negative bool
 	ignore_number_overflow bool
+	options_anywhere       bool
 }
 
 pub fn parse[T](usage string, input &Input) !(&T, []string) {
@@ -26,7 +27,7 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 	d.log_str('parse command-line usage and fill options')
 	re_opt := pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0)!
 
-	opts := analyse_usage(usage)
+	opts := analyse_usage(usage, input.options_anywhere)
 	raw_args := input.args or { os.args[1..] }
 	args := split_short_opts(opts, raw_args)!
 
