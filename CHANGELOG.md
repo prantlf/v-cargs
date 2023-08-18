@@ -1,5 +1,11 @@
 # Changes
 
+## [0.4.0](https://github.com/prantlf/v-cargs/compare/v0.3.0...v0.4.0) (2023-08-18)
+
+### Features
+
+* Add options_anywhere not to require the Options: line ([38fc333](https://github.com/prantlf/v-cargs/commit/38fc333ee56f30035ba28640e7424a90cc0b3cac))
+
 ## [0.3.0](https://github.com/prantlf/v-cargs/compare/v0.2.0...v0.3.0) (2023-08-17)
 
 ### Features
