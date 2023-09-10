@@ -1,5 +1,11 @@
 # Changes
 
+## [0.5.0](https://github.com/prantlf/v-cargs/compare/v0.4.0...v0.5.0) (2023-09-10)
+
+### Features
+
+* Allow scanning usage description before parsing arguments ([14ff0db](https://github.com/prantlf/v-cargs/commit/14ff0dbdec261d604efa92c76d596506c3128b03))
+
 ## [0.4.0](https://github.com/prantlf/v-cargs/compare/v0.3.0...v0.4.0) (2023-08-18)
 
 ### Features
