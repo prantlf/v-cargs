@@ -4,7 +4,7 @@ import os
 import math
 import strconv
 import v.reflection
-import prantlf.pcre { NoMatch, pcre_compile }
+import prantlf.pcre { NoMatch, RegEx, pcre_compile }
 import prantlf.strutil { replace_u8 }
 
 pub struct Input {
@@ -20,6 +20,16 @@ pub struct Scanned {
 	opts  []Opt
 	args  []string
 	usage string
+}
+
+const (
+	re_opt = unsafe { &RegEx(nil) }
+)
+
+fn init() {
+	unsafe {
+		cargs.re_opt = pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0) or { panic(err) }
+	}
 }
 
 pub fn parse[T](usage string, input &Input) !(&T, []string) {
@@ -41,8 +51,6 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 
 pub fn parse_scanned_to[T](scanned &Scanned, input &Input, mut cfg T) ![]string {
 	d.log_str('parse command-line arguments and fill configuration')
-	re_opt := pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0)!
-
 	opts := scanned.opts
 	args := scanned.args
 
@@ -78,7 +86,7 @@ pub fn parse_scanned_to[T](scanned &Scanned, input &Input, mut cfg T) ![]string 
 				else {}
 			}
 
-			m := re_opt.exec(arg, 0) or {
+			m := cargs.re_opt.exec(arg, 0) or {
 				if err is NoMatch {
 					return error('invalid argument "${arg}"')
 				}
@@ -144,8 +152,6 @@ pub fn scan(usage string, input &Input) !Scanned {
 
 pub fn get_val(scanned &Scanned, input &Input, arg_name string, def_val string) !string {
 	d.log('get command-line argument "%s"', arg_name)
-	re_opt := pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0)!
-
 	opt := scanned.opts.find_opt(arg_name) or { return error('unknown option "${arg_name}"') }
 	if opt.val.len == 0 {
 		return error('"${arg_name}" supports no value')
@@ -164,7 +170,7 @@ pub fn get_val(scanned &Scanned, input &Input, arg_name string, def_val string) 
 		}
 
 		if arg.len > 1 && arg[0] == `-` {
-			m := re_opt.exec(arg, 0) or {
+			m := cargs.re_opt.exec(arg, 0) or {
 				if err is NoMatch {
 					return error('invalid argument "${arg}"')
 				}
