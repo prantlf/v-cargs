@@ -1,5 +1,11 @@
 # Changes
 
+## [0.5.1](https://github.com/prantlf/v-cargs/compare/v0.5.0...v0.5.1) (2023-09-10)
+
+### Performance Improvements
+
+* Create the regex for an option only once ([6282a5f](https://github.com/prantlf/v-cargs/commit/6282a5f782882950a156d9f87bfc7489e5b90d20))
+
 ## [0.5.0](https://github.com/prantlf/v-cargs/compare/v0.4.0...v0.5.0) (2023-09-10)
 
 ### Features
