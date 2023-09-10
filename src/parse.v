@@ -16,20 +16,35 @@ pub mut:
 	options_anywhere       bool
 }
 
+pub struct Scanned {
+	opts  []Opt
+	args  []string
+	usage string
+}
+
 pub fn parse[T](usage string, input &Input) !(&T, []string) {
-	d.log_str('parse command-line usage and create options')
 	mut cfg := &T{}
 	cmds := parse_to(usage, input, mut cfg)!
 	return cfg, cmds
 }
 
+pub fn parse_scanned[T](scanned &Scanned, input &Input) !(&T, []string) {
+	mut cfg := &T{}
+	cmds := parse_scanned_to(scanned, input, mut cfg)!
+	return cfg, cmds
+}
+
 pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
-	d.log_str('parse command-line usage and fill options')
+	scanned := scan(usage, input)!
+	return parse_scanned_to[T](scanned, input, mut cfg)
+}
+
+pub fn parse_scanned_to[T](scanned &Scanned, input &Input, mut cfg T) ![]string {
+	d.log_str('parse command-line arguments and fill configuration')
 	re_opt := pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0)!
 
-	opts := analyse_usage(usage, input.options_anywhere)
-	raw_args := input.args or { os.args[1..] }
-	args := split_short_opts(opts, raw_args)!
+	opts := scanned.opts
+	args := scanned.args
 
 	mut cmds := []string{}
 	mut applied := []Opt{}
@@ -57,7 +72,7 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 					exit(0)
 				}
 				'-h', '--help' {
-					println(usage)
+					println(scanned.usage)
 					exit(0)
 				}
 				else {}
@@ -78,7 +93,7 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 			}
 			d.log('option "%s" detected', name)
 
-			if opt, flag := opts.find(name, input) {
+			if opt, flag := opts.find_opt_and_flag(name, input) {
 				if opt.val.len > 0 {
 					val := if start, end := m.group_bounds(3) {
 						arg[start..end]
@@ -119,6 +134,72 @@ pub fn parse_to[T](usage string, input &Input, mut cfg T) ![]string {
 	return cmds
 }
 
+pub fn scan(usage string, input &Input) !Scanned {
+	d.log_str('scan command-line usage and fill options')
+	opts := analyse_usage(usage, input.options_anywhere)
+	raw_args := input.args or { os.args[1..] }
+	args := split_short_opts(opts, raw_args)!
+	return Scanned{opts, args, usage}
+}
+
+pub fn get_val(scanned &Scanned, input &Input, arg_name string, def_val string) !string {
+	d.log('get command-line argument "%s"', arg_name)
+	re_opt := pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0)!
+
+	opt := scanned.opts.find_opt(arg_name) or { return error('unknown option "${arg_name}"') }
+	if opt.val.len == 0 {
+		return error('"${arg_name}" supports no value')
+	}
+	args := scanned.args
+
+	l := args.len
+	mut i := 0
+	for i < l {
+		arg := args[i]
+		i++
+
+		if arg == '--' {
+			d.log_str('argument separator detected')
+			break
+		}
+
+		if arg.len > 1 && arg[0] == `-` {
+			m := re_opt.exec(arg, 0) or {
+				if err is NoMatch {
+					return error('invalid argument "${arg}"')
+				}
+				return err
+			}
+			mut name := if start, end := m.group_bounds(1) {
+				arg[start..end]
+			} else if start, end := m.group_bounds(2) {
+				arg[start..end]
+			} else {
+				return error('malformed argument "${arg}"')
+			}
+			d.log('option "%s" detected', name)
+
+			if opt.has_name(name) {
+				val := if start, end := m.group_bounds(3) {
+					arg[start..end]
+				} else {
+					if i == l {
+						return error('missing value of "${arg}"')
+					}
+					idx := i
+					i++
+					args[idx]
+				}
+				d.log('value "%s" found', val)
+				return val
+			}
+		}
+	}
+
+	d.log_str('value not found')
+	return def_val
+}
+
 fn split_short_opts(opts []Opt, raw_args []string) ![]string {
 	re_cond := pcre_compile(r'^-\w+$', 0)!
 	mut args := []string{}
@@ -153,7 +234,7 @@ fn split_short_opts(opts []Opt, raw_args []string) ![]string {
 	return args
 }
 
-fn (opts []Opt) find(arg string, input Input) ?(Opt, bool) {
+fn (opts []Opt) find_opt_and_flag(arg string, input Input) ?(Opt, bool) {
 	mut flag := true
 	name := if arg.starts_with('no-') {
 		flag = false
@@ -177,6 +258,23 @@ fn (opts []Opt) find(arg string, input Input) ?(Opt, bool) {
 		}
 	}
 	return none
+}
+
+fn (opts []Opt) find_opt(name string) ?Opt {
+	for opt in opts {
+		if name == opt.short || name == opt.long {
+			return opt
+		}
+	}
+	return none
+}
+
+fn (opt &Opt) has_name(name string) bool {
+	return if name.len == 1 {
+		name == opt.short
+	} else {
+		name == opt.long
+	}
 }
 
 fn check_applied[T](cfg T, applied []Opt) ! {
@@ -285,10 +383,10 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 				cfg.$(field.name) = get_float[f32](val, ino)!
 			} $else $if field.typ is f64 || field.typ is ?f64 {
 				cfg.$(field.name) = get_float[f64](val, ino)!
-				// } $else $if field.typ is rune || field.typ is ?rune {
-				// 	cfg.$(field.name) = get_char[rune](val)!
-				// } $else $if field.typ is char || field.typ is ?char {
-				// 	cfg.$(field.name) = get_char[char](val)!
+			} $else $if field.typ is rune || field.typ is ?rune {
+				cfg.$(field.name) = get_char[rune](val)!
+			} $else $if field.typ is char || field.typ is ?char {
+				cfg.$(field.name) = get_char[char](val)!
 			} $else $if field.typ is string || field.typ is ?string {
 				cfg.$(field.name) = val
 			} $else $if field.is_array {
@@ -334,14 +432,14 @@ fn convert_val[T](val string, ignore_overflow bool) !T {
 		return get_float[f32](val, ignore_overflow)!
 	} $else $if T is f64 {
 		return get_float[f64](val, ignore_overflow)!
-		// } $else $if T is rune {
-		// 	return get_char[rune](val)!
-		// } $else $if T is char {
-		// 	return get_char[char](val)!
+	} $else $if T is rune {
+		return get_char[rune](val)!
+	} $else $if T is char {
+		return get_char[char](val)!
 	} $else $if T is string {
 		return val
 	} $else $if T.is_enum {
-		orig_val := cfg.$(field.name)
+		orig_val := T{}
 		return get_enum(val, orig_val)!
 	} $else {
 		return error('${val} cannot be converted to ${type_name(T.idx)}')
@@ -433,12 +531,12 @@ fn get_float[T](val string, ignore_overflow bool) !T {
 	return error('"${val}" is not a number')
 }
 
-// fn get_char[T](val string) !T {
-// 	if val.len != 1 {
-// 		return error('unable to convert "${val}" to a single character')
-// 	}
-// 	return val[0]
-// }
+fn get_char[T](val string) !T {
+	if val.len != 1 {
+		return error('unable to convert "${val}" to a single character')
+	}
+	return val[0]
+}
 
 fn (opt Opt) field_name() string {
 	name := if opt.long.len > 0 {

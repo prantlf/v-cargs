@@ -13,7 +13,7 @@ mut:
 }
 
 fn analyse_usage(text string, anywhere bool) []Opt {
-	mut re_opt := regex.regex_opt('^\\s*-([^\\-])?(?:[|,]\\s*-)?(?:-([^ ]+))?(?:\\s+[<\\[]([^>\\]]+)[>\\]])?') or {
+	mut re_def := regex.regex_opt('^\\s*-([^\\-])?(?:[|,]\\s*-)?(?:-([^ ]+))?(?:\\s+[<\\[]([^>\\]]+)[>\\]])?') or {
 		panic(err)
 	}
 	mut opts := []Opt{}
@@ -24,9 +24,9 @@ fn analyse_usage(text string, anywhere bool) []Opt {
 			if line.len == 0 && !anywhere {
 				break
 			}
-			if re_opt.matches_string(line) {
+			if re_def.matches_string(line) {
 				cargs.d.log('option matched: "%s"', line)
-				grp_opt := re_opt.get_group_list()
+				grp_opt := re_def.get_group_list()
 				mut opt := Opt{}
 				if grp_opt[0].start >= 0 {
 					opt.short = line[grp_opt[0].start..grp_opt[0].end]

@@ -140,56 +140,62 @@ struct Integrals {
 	i64   i64
 	f32   f32
 	f64   f64
+	rune  rune
+	char  char
 }
 
-// fn test_integral_types() {
-// 	opts, args := parse[Integrals]('
-// Options:
-//   --human <enum>
-//   --u8 <num>
-//   --u16 <num>
-//   --u32 <num>
-//   --u64 <num>
-//   --i8 <num>
-//   --i16 <num>
-//   --int <num>
-//   --i64 <num>
-//   --f32 <num>
-//   --f64 <num>
-// ',
-// 		Input{
-// 		args: ['--human=woman', '--u8=1', '--u16=2', '--u32=3', '--u64=4', '--i8=5', '--i16=6',
-// 			'--int=7', '--i64=8', '--f32=9.1', '--f64=9.2']
-// 	})!
-// 	assert opts.human == .woman
-// 	assert opts.u8 == 1
-// 	assert opts.u16 == 2
-// 	assert opts.u32 == 3
-// 	assert opts.u64 == 4
-// 	assert opts.i8 == 5
-// 	assert opts.i16 == 6
-// 	assert opts.int == 7
-// 	assert opts.i64 == 8
-// 	assert opts.f32 == 9.1
-// 	assert opts.f64 == 9.2
-// 	assert args == []
+fn test_integral_types() {
+	opts, args := parse[Integrals]('
+Options:
+  --human <enum>
+  --u8 <num>
+  --u16 <num>
+  --u32 <num>
+  --u64 <num>
+  --i8 <num>
+  --i16 <num>
+  --int <num>
+  --i64 <num>
+  --f32 <num>
+  --f64 <num>
+  --rune <rune>
+  --char <char>
+',
+		Input{
+		args: ['--human=woman', '--u8=1', '--u16=2', '--u32=3', '--u64=4', '--i8=5', '--i16=6',
+			'--int=7', '--i64=8', '--f32=9.1', '--f64=9.2', '--rune=a', '--char=b']
+	})!
+	assert opts.human == .woman
+	assert opts.u8 == 1
+	assert opts.u16 == 2
+	assert opts.u32 == 3
+	assert opts.u64 == 4
+	assert opts.i8 == 5
+	assert opts.i16 == 6
+	assert opts.int == 7
+	assert opts.i64 == 8
+	assert opts.f32 == 9.1
+	assert opts.f64 == 9.2
+	assert opts.rune == `a`
+	assert opts.char == `b`
+	assert args == []
+}
+
+// struct Optionals {
+// 	human ?Human
+// 	u8    ?u8
+// 	u16   ?u16
+// 	u32   ?u32
+// 	u64   ?u64
+// 	i8    ?i8
+// 	i16   ?i16
+// 	int   ?int
+// 	i64   ?i64
+// 	f32   ?f32
+// 	f64   ?f64
+// 	s     ?string
+// 	b     ?bool
 // }
-
-struct Optionals {
-	human ?Human
-	u8    ?u8
-	u16   ?u16
-	u32   ?u32
-	u64   ?u64
-	i8    ?i8
-	i16   ?i16
-	int   ?int
-	i64   ?i64
-	f32   ?f32
-	f64   ?f64
-	s     ?string
-	b     ?bool
-}
 
 // fn test_optional_types() {
 // 	opts, args := parse[Optionals]('
@@ -244,16 +250,16 @@ Options:
 	assert args == []
 }
 
-// fn test_wrong_enum() {
-// 	parse[Integrals]('
-// Options:
-//   --human [enum]
-// ', Input{ args: ['--human', 'dummy'] }) or {
-// 		assert err.msg() == '"dummy" not in Human enum'
-// 		return
-// 	}
-// 	assert false
-// }
+fn test_wrong_enum() {
+	parse[Integrals]('
+Options:
+  --human [enum]
+', Input{ args: ['--human', 'dummy'] }) or {
+		assert err.msg() == '"dummy" not in Human enum'
+		return
+	}
+	assert false
+}
 
 fn test_no_integer() {
 	parse[Integrals]('
@@ -436,33 +442,35 @@ Options:
 	assert opts.numbers == [1, 2]
 }
 
-// struct CustomSplit {
-// 	chars []rune [split: ';']
-// }
+struct CustomSplitRune {
+	chars []rune [split: ';']
+}
 
-// fn test_array_split_custom() {
-// 	opts, args := parse[CustomSplit]('
-// Options:
-//   -c, --chars <char>  allowed characters
-// ', Input{
-// 		args: ['-c', 'a;b']
-// 	})!
-// 	assert opts.chars == [`a`, `b`]
-// }
+fn test_array_split_custom_rune() {
+	opts, args := parse[CustomSplitRune]('
+Options:
+  -c, --chars <char>  allowed characters
+',
+		Input{
+		args: ['-c', 'a;b']
+	})!
+	assert opts.chars == [`a`, `b`]
+}
 
-// struct CustomSplit {
-// 	chars []char [split: ';']
-// }
+struct CustomSplitChar {
+	chars []char [split: ';']
+}
 
-// fn test_array_split_custom() {
-// 	opts, args := parse[CustomSplit]('
-// Options:
-//   -c, --chars <char>  allowed characters
-// ', Input{
-// 		args: ['-c', 'a;b']
-// 	})!
-// 	assert opts.chars == [char(`a`), char(`b`)]
-// }
+fn test_array_split_custom_char() {
+	opts, args := parse[CustomSplitChar]('
+Options:
+  -c, --chars <char>  allowed characters
+',
+		Input{
+		args: ['-c', 'a;b']
+	})!
+	assert opts.chars == [char(`a`), char(`b`)]
+}
 
 struct CustomSplit {
 	chars []string [split: ';']
@@ -477,4 +485,27 @@ Options:
 		args: ['-c', 'a;b']
 	})!
 	assert opts.chars == ['a', 'b']
+}
+
+fn test_get_val_ok() {
+	input := Input{
+		args: ['-c', 'cfg']
+	}
+	scanned := scan('
+Options:
+  -l|--line-break     append a line break to the JSON output
+  -c|--config <file>  set the name of the configuration file
+  -o|--output <file>  write the JSON output to a file
+',
+		input)!
+	assert get_val(scanned, input, 'config', '')! == 'cfg'
+	assert get_val(scanned, input, 'c', '')! == 'cfg'
+	assert get_val(scanned, input, 'output', 'out')! == 'out'
+	assert get_val(scanned, input, 'o', 'out')! == 'out'
+	if _ := get_val(scanned, input, 'l', '') {
+		assert false
+	}
+	if _ := get_val(scanned, input, 'dummy', '') {
+		assert false
+	}
 }

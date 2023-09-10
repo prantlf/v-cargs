@@ -12,7 +12,6 @@ Parses command-line arguments to statically typed options or a string map with t
 Specify usage description and version of the command-line tool. Declare a structure with all command-line options. Import the command-line parser and parse the options and arguments:
 
 ```go
-import os
 import prantlf.cargs { parse, Input }
 
 // Describe usage of the command-line tool.
@@ -69,6 +68,8 @@ The following functions and types are exported:
 Parses the command line, separating options and other arguments. Options will be set to the statically-typed structure and other arguments returned as an array of strings. The list of options will be inferred from the usage description.
 
 ```go
+import prantlf.cargs { parse, Input }
+
 usage := '...
 
 Options:
@@ -87,7 +88,139 @@ opts, args := parse[Opts](usage, Input{ version: '0.0.1' })!
 
 ### parse_to[T](usage string, input Input, mut opts T) ![]string
 
-Parses the command line, separating options and other arguments, while setting the field values in an already created object. It can be used to override options initially read from configuration file from the command-line, for example. See [prantlf.config] for more information.
+Parses the command line, separating options and other arguments, while setting the field values in an already created object. It can be used to override options initially read from configuration file from the command-line or defaults, for example.
+
+```go
+import prantlf.cargs { parse_to, Input }
+
+usage := '...
+
+Options:
+  -o|--output <file>  write the JSON output to a file
+  -p|--pretty         prints the JSON output with line breaks and indented
+
+...'
+
+struct Opts {
+  output string
+  pretty bool
+}
+
+mut opts := Opts{ output: 'out.json' }
+args := parse_to[Opts](usage, Input{ version: '0.0.1' }, mut opts)!
+```
+
+See [prantlf.config] for more information.
+
+### scan(usage string, input Input) !Scanned
+
+Parses the command line, only analysing the usage description and splitting command-line argument groups. It can be used for splitting the two phases - analysis and command-line argument processing. The argument processing can be finished by `parse_scanned` or `parse_scanned_to`. Before that, a single option can be obtained by `get_val`, for example.
+
+```go
+import prantlf.cargs { scan, parse_scanned_to, Input }
+
+usage := '...
+
+Options:
+  -o|--output <file>  write the JSON output to a file
+  -p|--pretty         prints the JSON output with line breaks and indented
+
+...'
+
+struct Opts {
+  output string
+  pretty bool
+}
+
+input := Input{ version: '0.0.1' }
+scanned := scan(usage, input)!
+...
+mut opts := Opts{ output: 'out.json' }
+args := parse_scanned_to[Opts](scanned, input, mut opts)!
+```
+
+### get_val(scanned Scanned, input Input, arg_name string, def_val string) !string
+
+Partially parses the command line to get only the value of one argument. This argument usually decides about default values or other processing before the other command-line arguments will be parsed.
+
+```go
+import prantlf.cargs { scan, get_val, parse_scanned_to, Input }
+import prantlf.config { read_config_to }
+
+usage := '...
+
+Options:
+  -c|--config <name>  name or path to the configuration file
+  -p|--pretty         prints the JSON output with line breaks and indented
+
+...'
+
+struct Opts {
+  pretty bool
+}
+
+input := Input{ version: '0.0.1' }
+scanned := scan(usage, input)!
+config := get_val(scanned, input, 'config', '')!
+mut opts := Opts{}
+if config.len > 0 {
+  read_config_to(config_name, mut opts)!
+}
+args := parse_scanned_to(scanned, input, mut opts)!
+```
+
+### parse_scanned[T](scanned Scanned, input Input) !(T, []string)
+
+Finishes parsing the command line using previously analysed usage instructions. Calling the combination of `scan` and `parse_scanned` is the same as calling `parse`.
+
+```go
+import prantlf.cargs { scan, parse_scanned, Input }
+
+usage := '...
+
+Options:
+  -o|--output <file>  write the JSON output to a file
+  -p|--pretty         prints the JSON output with line breaks and indented
+
+...'
+
+struct Opts {
+  output string
+  pretty bool
+}
+
+input := Input{ version: '0.0.1' }
+scanned := scan(usage, input)!
+...
+opts, args := parse_scanned[Opts](scanned, input)!
+```
+
+### parse_scanned_to[T](scanned Scanned, input Input, mut opts T) ![]string
+
+Finishes parsing the command line using previously analysed usage instructions. Calling the combination of `scan` and `parse_scanned_to` is the same as calling `parse_to`.
+
+```go
+import prantlf.cargs { scan, parse_scanned_to, Input }
+
+usage := '...
+
+Options:
+  -o|--output <file>  write the JSON output to a file
+  -p|--pretty         prints the JSON output with line breaks and indented
+
+...'
+
+struct Opts {
+  output string
+  pretty bool
+}
+
+input := Input{ version: '0.0.1' }
+scanned := scan(usage, input)!
+...
+mut opts := Opts{ output: 'out.json' }
+args := parse_scanned_to[Opts](scanned, input, mut opts)!
+```
 
 ### Usage Instructions
 
