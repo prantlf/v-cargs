@@ -24,9 +24,9 @@ Usage: yaml2json [options] [<yaml-file>]
 Options:
   -o|--output <file>   write the JSON output to a file
   -i|--indent <count>  write the JSON output to a file
-  -p|--pretty          prints the JSON output with line breaks and indented
-  -V|--version         prints the version of the executable and exits
-  -h|--help            prints the usage information and exits
+  -p|--pretty          print the JSON output with line breaks and indented
+  -V|--version         print the version of the executable and exit
+  -h|--help            print the usage information and exit
 
 If no input file is specified, it will be read from standard input.
 
@@ -74,7 +74,7 @@ usage := '...
 
 Options:
   -o|--output <file>  write the JSON output to a file
-  -p|--pretty         prints the JSON output with line breaks and indented
+  -p|--pretty         print the JSON output with line breaks and indented
 
 ...'
 
@@ -97,7 +97,7 @@ usage := '...
 
 Options:
   -o|--output <file>  write the JSON output to a file
-  -p|--pretty         prints the JSON output with line breaks and indented
+  -p|--pretty         print the JSON output with line breaks and indented
 
 ...'
 
@@ -123,7 +123,7 @@ usage := '...
 
 Options:
   -o|--output <file>  write the JSON output to a file
-  -p|--pretty         prints the JSON output with line breaks and indented
+  -p|--pretty         print the JSON output with line breaks and indented
 
 ...'
 
@@ -151,7 +151,7 @@ usage := '...
 
 Options:
   -c|--config <name>  name or path to the configuration file
-  -p|--pretty         prints the JSON output with line breaks and indented
+  -p|--pretty         print the JSON output with line breaks and indented
 
 ...'
 
@@ -180,7 +180,7 @@ usage := '...
 
 Options:
   -o|--output <file>  write the JSON output to a file
-  -p|--pretty         prints the JSON output with line breaks and indented
+  -p|--pretty         print the JSON output with line breaks and indented
 
 ...'
 
@@ -206,7 +206,7 @@ usage := '...
 
 Options:
   -o|--output <file>  write the JSON output to a file
-  -p|--pretty         prints the JSON output with line breaks and indented
+  -p|--pretty         print the JSON output with line breaks and indented
 
 ...'
 
@@ -228,7 +228,7 @@ The `usage` parameter is the formatted text to be presented as usage instruction
 
     Options:
       -o|--output <file>  write the JSON output to a file
-      -p|--pretty         prints the JSON output with line breaks and indented
+      -p|--pretty         print the JSON output with line breaks and indented
 
 An option-line can contain a short (single-letter) option, a long option or both. The option can be either a boolean flag or an variable with a value.
 
@@ -247,8 +247,8 @@ If a negative option is entered, the field in the options structure has to be st
 
 Two command-line options will be recognised and processed by the `parse` function itself:
 
-* `-V|--version` - prints the version of the executable and exits
-* `-h|--help` - prints the usage information and exits
+* `-V|--version` - print the version of the executable and exit
+* `-h|--help` - print the usage information and exit
 
 Short (single-letter) options can be condensed together. For example, instead of `-l -p`, you can write `-lp` on the command line.
 

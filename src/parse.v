@@ -2,8 +2,8 @@ module cargs
 
 import os
 import math
-import strconv
-import v.reflection
+import strconv { atof64, atoi }
+import v.reflection { Enum, get_type }
 import prantlf.pcre { NoMatch, RegEx, pcre_compile }
 import prantlf.strutil { replace_u8 }
 
@@ -478,7 +478,7 @@ fn set_flag[T](mut cfg T, opt Opt, flag bool) ! {
 }
 
 fn get_enum[T](val string, orig_val T) !T {
-	if num := strconv.atoi(val) {
+	if num := atoi(val) {
 		return unsafe { T(num) }
 	} else {
 		enums := enum_vals(T.idx)!
@@ -492,8 +492,8 @@ fn get_enum[T](val string, orig_val T) !T {
 }
 
 fn enum_vals(idx int) ![]string {
-	return if typ := reflection.get_type(idx) {
-		if typ.sym.info is reflection.Enum {
+	return if typ := get_type(idx) {
+		if typ.sym.info is Enum {
 			typ.sym.info.vals
 		} else {
 			error('${typ.name} not an enum')
@@ -504,7 +504,7 @@ fn enum_vals(idx int) ![]string {
 }
 
 fn get_int[T](val string, ignore_overflow bool) !T {
-	if num := strconv.atoi(val) {
+	if num := atoi(val) {
 		i := T(num)
 		if num != i {
 			if ignore_overflow {
@@ -521,7 +521,7 @@ fn get_int[T](val string, ignore_overflow bool) !T {
 }
 
 fn get_float[T](val string, ignore_overflow bool) !T {
-	if num := strconv.atof64(val) {
+	if num := atof64(val) {
 		f := T(num)
 		if num - f64(f) > math.smallest_non_zero_f64 {
 			if ignore_overflow {
@@ -589,7 +589,7 @@ fn (opt Opt) name() string {
 }
 
 fn type_name(idx int) string {
-	return if typ := reflection.get_type(idx) {
+	return if typ := get_type(idx) {
 		typ.name
 	} else {
 		'unknown'

@@ -1,6 +1,6 @@
 module cargs
 
-import regex
+import regex { regex_opt }
 import prantlf.debug { new_debug }
 
 const d = new_debug('cargs')
@@ -13,7 +13,7 @@ mut:
 }
 
 fn analyse_usage(text string, anywhere bool) []Opt {
-	mut re_def := regex.regex_opt('^\\s*-([^\\-])?(?:[|,]\\s*-)?(?:-([^ ]+))?(?:\\s+[<\\[]([^>\\]]+)[>\\]])?') or {
+	mut re_def := regex_opt('^\\s*-([^\\-])?(?:[|,]\\s*-)?(?:-([^ ]+))?(?:\\s+[<\\[]([^>\\]]+)[>\\]])?') or {
 		panic(err)
 	}
 	mut opts := []Opt{}
