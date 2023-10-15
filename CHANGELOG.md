@@ -1,5 +1,11 @@
 # Changes
 
+## [0.7.0](https://github.com/prantlf/v-cargs/compare/v0.6.0...v0.7.0) (2023-10-15)
+
+### Features
+
+* Support getting boolean arguments - flags - from scanned usage ([e61087f](https://github.com/prantlf/v-cargs/commit/e61087fd0e766a31e27973575f3e716d18df4e4e))
+
 ## [0.6.0](https://github.com/prantlf/v-cargs/compare/v0.5.1...v0.6.0) (2023-10-15)
 
 ### Features
