@@ -1,5 +1,11 @@
 # Changes
 
+## [0.6.0](https://github.com/prantlf/v-cargs/compare/v0.5.1...v0.6.0) (2023-10-15)
+
+### Features
+
+* Allow disabling negative options by no_negative_options ([a53f710](https://github.com/prantlf/v-cargs/commit/a53f710c25230cf6644edeb1a36f6699ee07e1ac))
+
 ## [0.5.1](https://github.com/prantlf/v-cargs/compare/v0.5.0...v0.5.1) (2023-09-10)
 
 ### Performance Improvements
