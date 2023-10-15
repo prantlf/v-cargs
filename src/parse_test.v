@@ -10,6 +10,18 @@ struct TwoTrue {
 	output     string
 }
 
+struct TwoNegative {
+	no_line_break bool
+}
+
+struct TwoPositiveTrue {
+	line_break bool = true
+}
+
+struct TwoPositiveFalse {
+	line_break bool
+}
+
 fn test_no_opts_no_args() {
 	opts, args := parse[Two]('', Input{ args: [] })!
 	assert opts.line_break == false
@@ -59,6 +71,33 @@ fn test_no_options_line() {
   -l|--line-break     append a line break to the JSON output
 ',
 		Input{ args: ['-l'], options_anywhere: true })!
+	assert opts.line_break == true
+}
+
+fn test_no_negative_options() {
+	opts, args := parse[TwoNegative]('
+Options:
+  -n|--no-line-break  do not append a line break to the JSON output
+',
+		Input{ args: ['-n'], no_negative_options: true })!
+	assert opts.no_line_break == true
+}
+
+fn test_negative_option() {
+	opts, args := parse[TwoPositiveTrue]('
+Options:
+  -N|--no-line-break  do not append a line break to the JSON output
+',
+		Input{ args: ['-N'] })!
+	assert opts.line_break == false
+}
+
+fn test_positive_option() {
+	opts, args := parse[TwoPositiveFalse]('
+Options:
+  -N|--no-line-break  do not append a line break to the JSON output
+',
+		Input{ args: ['-n'] })!
 	assert opts.line_break == true
 }
 

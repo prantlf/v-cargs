@@ -14,6 +14,7 @@ pub mut:
 	disable_short_negative bool
 	ignore_number_overflow bool
 	options_anywhere       bool
+	no_negative_options    bool
 }
 
 pub struct Scanned {
@@ -122,7 +123,7 @@ pub fn parse_scanned_to[T](scanned &Scanned, input &Input, mut cfg T) ![]string 
 					if d.is_enabled() {
 						d.log_str('flag "${flag}" used')
 					}
-					set_flag(mut cfg, opt, flag)!
+					set_flag(mut cfg, opt, flag, input.no_negative_options)!
 				}
 				applied << opt
 			} else {
@@ -133,7 +134,7 @@ pub fn parse_scanned_to[T](scanned &Scanned, input &Input, mut cfg T) ![]string 
 		}
 	}
 
-	check_applied(cfg, applied)!
+	check_applied(cfg, applied, input.no_negative_options)!
 
 	for i < l {
 		cmds << args[i]
@@ -144,7 +145,7 @@ pub fn parse_scanned_to[T](scanned &Scanned, input &Input, mut cfg T) ![]string 
 
 pub fn scan(usage string, input &Input) !Scanned {
 	d.log_str('scan command-line usage and fill options')
-	opts := analyse_usage(usage, input.options_anywhere)
+	opts := analyse_usage(usage, input.options_anywhere, input.no_negative_options)
 	raw_args := input.args or { os.args[1..] }
 	args := split_short_opts(opts, raw_args)!
 	return Scanned{opts, args, usage}
@@ -242,7 +243,7 @@ fn split_short_opts(opts []Opt, raw_args []string) ![]string {
 
 fn (opts []Opt) find_opt_and_flag(arg string, input Input) ?(Opt, bool) {
 	mut flag := true
-	name := if arg.starts_with('no-') {
+	name := if !input.no_negative_options && arg.starts_with('no-') {
 		flag = false
 		arg[3..]
 	} else {
@@ -252,10 +253,21 @@ fn (opts []Opt) find_opt_and_flag(arg string, input Input) ?(Opt, bool) {
 	for opt in opts {
 		if name.len == 1 {
 			if name == opt.short {
-				return opt, true
-			} else if !input.disable_short_negative && name[0] < u8(`a`)
-				&& name[0] == opt.short[0] & ~32 {
-				return opt, false
+				flag = if !input.disable_short_negative && !input.no_negative_options
+					&& name[0] < u8(`a`) {
+					false
+				} else {
+					true
+				}
+				return opt, flag
+			} else if !input.disable_short_negative && !input.no_negative_options
+				&& opt.short.len == 1 && name[0] & ~32 == opt.short[0] & ~32 {
+				flag = if name[0] < u8(`a`) {
+					false
+				} else {
+					true
+				}
+				return opt, flag
 			}
 		} else {
 			if name == opt.long {
@@ -283,7 +295,7 @@ fn (opt &Opt) has_name(name string) bool {
 	}
 }
 
-fn check_applied[T](cfg T, applied []Opt) ! {
+fn check_applied[T](cfg T, applied []Opt, no_negative bool) ! {
 	mut valid := []Opt{}
 
 	$for field in T.fields {
@@ -309,7 +321,7 @@ fn check_applied[T](cfg T, applied []Opt) ! {
 		mut found := false
 		for opt in applied {
 			name := opt.field_name()
-			if name == arg_name {
+			if name == field.name || opt.long == arg_name {
 				valid << opt
 				found = true
 				break
@@ -347,7 +359,7 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 			}
 		}
 
-		if name == arg_name {
+		if name == field.name || opt.long == arg_name {
 			ino := nooverflow || input.ignore_number_overflow
 
 			if d.is_enabled() {
@@ -452,7 +464,7 @@ fn convert_val[T](val string, ignore_overflow bool) !T {
 	}
 }
 
-fn set_flag[T](mut cfg T, opt Opt, flag bool) ! {
+fn set_flag[T](mut cfg T, opt Opt, flag bool, no_negative bool) ! {
 	name := opt.field_name()
 	$for field in T.fields {
 		mut arg_name := field.name
@@ -462,7 +474,7 @@ fn set_flag[T](mut cfg T, opt Opt, flag bool) ! {
 			}
 		}
 
-		if name == arg_name {
+		if name == field.name || opt.long == arg_name {
 			if d.is_enabled() {
 				d.log_str('setting flag "${name}" using argument "${arg_name}" to "${flag}"')
 			}

@@ -257,6 +257,7 @@ Names of fields in the options structure are inferred from the command-line opti
 * The long variant of an option will be mapped to its field name. The short variant will be used only if the long variant is missing.
 * Upper-case letters will converted to lower-case.
 * Dashes (`-`) in an option name will be converted to underscores (`_`) in its field name.
+* No negative names (starting with `no_`). If you want to specify a negative option (the short one using a capital letter and the long one starting with `--no-`), you can, but the field has to be positive and assigned the default value `true`. Then you can detect the presence of the negative option by a comparison to `false`.
 
 If you write a short (single-letter) option for a boolean flag in upper-case, it will set the value `false` to the boolean field instead of `true`. If you write a long option for a boolean flag, you can negate its value by prefixing the option with `no-`:
 
@@ -303,6 +304,7 @@ The following input fields are available:
 | `disable_short_negative` | `bool`      | `false`     | disables handling uppercase letters as negated options       |
 | `ignore_number_overflow` | `bool`      | `false`     | ignores an overflow when converting numbers to option fields |
 | `options_anywhere`       | `bool`      | `false`     | do not look for options only after the line with `Options:`  |
+| `no_negative_options`    | `bool`      | `false`     | do not recognise options starting with `no-` as negations    |
 
 ### Advanced
 
@@ -381,11 +383,15 @@ struct Opts {
 }
 ```
 
-## TODO
+## Contributing
 
-This is a work in progress.
+In lieu of a formal styleguide, take care to maintain the existing coding style. Lint and test your code.
 
-* Add a string map as the parsing target.
+## License
+
+Copyright (c) 2023 Ferdinand Prantl
+
+Licensed under the MIT license.
 
 [VPM]: https://vpm.vlang.io/packages/prantlf.cargs
 [getopt and getopt_long]: https://en.wikipedia.org/wiki/Getopt

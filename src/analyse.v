@@ -12,7 +12,7 @@ mut:
 	val   string
 }
 
-fn analyse_usage(text string, anywhere bool) []Opt {
+fn analyse_usage(text string, anywhere bool, no_negative bool) []Opt {
 	mut re_def := regex_opt('^\\s*-([^\\-])?(?:[|,]\\s*-)?(?:-([^ ]+))?(?:\\s+[<\\[]([^>\\]]+)[>\\]])?') or {
 		panic(err)
 	}
@@ -37,7 +37,7 @@ fn analyse_usage(text string, anywhere bool) []Opt {
 				if grp_opt[2].start >= 0 {
 					opt.val = line[grp_opt[2].start..grp_opt[2].end]
 				}
-				if opt.long.starts_with('no-') {
+				if !no_negative && opt.long.starts_with('no-') {
 					orig_name := opt.long
 					opt.long = opt.long[3..]
 					cargs.d.log('option short: "%s", long: "%s" (originally "%s"), value: "%s"',
