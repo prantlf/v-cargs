@@ -23,6 +23,10 @@ pub struct Scanned {
 	usage string
 }
 
+struct NoArg {
+	Error
+}
+
 const (
 	re_opt = unsafe { &RegEx(nil) }
 )
@@ -151,12 +155,49 @@ pub fn scan(usage string, input &Input) !Scanned {
 	return Scanned{opts, args, usage}
 }
 
-pub fn get_val(scanned &Scanned, input &Input, arg_name string, def_val string) !string {
-	d.log('get command-line argument "%s"', arg_name)
+pub fn needs_val(scanned &Scanned, arg_name string) !bool {
+	d.log('check if command-line argument "%s" has a value', arg_name)
+	opt := scanned.opts.find_opt(arg_name) or { return error('unknown option "${arg_name}"') }
+	return opt.val.len != 0
+}
+
+pub fn get_val(scanned &Scanned, arg_name string, def_val string) !string {
+	d.log('get value of command-line argument "%s"', arg_name)
 	opt := scanned.opts.find_opt(arg_name) or { return error('unknown option "${arg_name}"') }
 	if opt.val.len == 0 {
 		return error('"${arg_name}" supports no value')
 	}
+
+	if val := get_arg(scanned, opt) {
+		return val
+	} else {
+		if err is NoArg {
+			return def_val
+		} else {
+			return err
+		}
+	}
+}
+
+pub fn get_flag(scanned &Scanned, arg_name string) !bool {
+	d.log('get command-line flag "%s"', arg_name)
+	opt := scanned.opts.find_opt(arg_name) or { return error('unknown option "${arg_name}"') }
+	if opt.val.len != 0 {
+		return error('"${arg_name}" requires a value')
+	}
+
+	if _ := get_arg(scanned, opt) {
+		return true
+	} else {
+		if err is NoArg {
+			return false
+		} else {
+			return err
+		}
+	}
+}
+
+fn get_arg(scanned &Scanned, opt &Opt) !string {
 	args := scanned.args
 
 	l := args.len
@@ -187,24 +228,38 @@ pub fn get_val(scanned &Scanned, input &Input, arg_name string, def_val string) 
 			d.log('option "%s" detected', name)
 
 			if opt.has_name(name) {
-				val := if start, end := m.group_bounds(3) {
-					arg[start..end]
-				} else {
-					if i == l {
-						return error('missing value of "${arg}"')
+				if opt.val.len != 0 {
+					val := if start, end := m.group_bounds(3) {
+						arg[start..end]
+					} else {
+						if i == l {
+							return error('missing value of "${arg}"')
+						}
+						idx := i
+						i++
+						args[idx]
 					}
-					idx := i
-					i++
-					args[idx]
+					d.log('value "%s" found', val)
+					return val
+				} else {
+					if _, _ := m.group_bounds(3) {
+						return error('unexpected value of "${arg}"')
+					} else {
+						d.log_str('flag found')
+						return ''
+					}
 				}
-				d.log('value "%s" found', val)
-				return val
 			}
 		}
 	}
 
-	d.log_str('value not found')
-	return def_val
+	typ := if opt.val.len != 0 {
+		'value'
+	} else {
+		'flag'
+	}
+	d.log('%s not found', typ)
+	return NoArg{}
 }
 
 fn split_short_opts(opts []Opt, raw_args []string) ![]string {

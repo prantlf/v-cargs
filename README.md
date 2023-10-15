@@ -139,7 +139,11 @@ mut opts := Opts{ output: 'out.json' }
 args := parse_scanned_to[Opts](scanned, input, mut opts)!
 ```
 
-### get_val(scanned Scanned, input Input, arg_name string, def_val string) !string
+### pub fn needs_val(scanned Scanned, arg_name string) !bool
+
+Checks if the specified argument is valid and returns if it needs a value on the command line. This can be used in a generic code together with `get_val` and `get_flag`.
+
+### get_val(scanned Scanned, arg_name string, def_val string) !string
 
 Partially parses the command line to get only the value of one argument. This argument usually decides about default values or other processing before the other command-line arguments will be parsed.
 
@@ -161,12 +165,40 @@ struct Opts {
 
 input := Input{ version: '0.0.1' }
 scanned := scan(usage, input)!
-config := get_val(scanned, input, 'config', '')!
+config := get_val(scanned, 'config', '')!
 mut opts := Opts{}
 if config.len > 0 {
   read_config_to(config_name, mut opts)!
 }
 args := parse_scanned_to(scanned, input, mut opts)!
+```
+
+### get_flag(scanned Scanned, arg_name string) !bool
+
+Partially parses the command line to test only if the argument is present. This argument usually decides about default values or other processing before the other command-line arguments will be parsed.
+
+```go
+import prantlf.cargs { scan, get_flag, Input }
+import prantlf.config { write_config }
+
+usage := '...
+
+Options:
+  -c|--config <name>  name or path to the configuration file
+  -i|--init           create the configuration file with default values
+  -p|--pretty         print the JSON output with line breaks and indented
+
+...'
+
+struct Opts {
+  pretty bool
+}
+
+input := Input{ version: '0.0.1' }
+scanned := scan(usage, input)!
+if get_flag(scanned, 'i')! {
+  write_config('config.ini', Opts{})!
+}
 ```
 
 ### parse_scanned[T](scanned Scanned, input Input) !(T, []string)

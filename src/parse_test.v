@@ -526,7 +526,24 @@ Options:
 	assert opts.chars == ['a', 'b']
 }
 
-fn test_get_val_ok() {
+fn test_needs_val() {
+	input := Input{}
+	scanned := scan('
+Options:
+  -l|--line-break     append a line break to the JSON output
+  -o|--output <file>  write the JSON output to a file
+',
+		input)!
+	assert !needs_val(scanned, 'line-break')!
+	assert !needs_val(scanned, 'l')!
+	assert needs_val(scanned, 'output')!
+	assert needs_val(scanned, 'o')!
+	if _ := needs_val(scanned, 'dummy') {
+		assert false
+	}
+}
+
+fn test_get_val() {
 	input := Input{
 		args: ['-c', 'cfg']
 	}
@@ -537,14 +554,37 @@ Options:
   -o|--output <file>  write the JSON output to a file
 ',
 		input)!
-	assert get_val(scanned, input, 'config', '')! == 'cfg'
-	assert get_val(scanned, input, 'c', '')! == 'cfg'
-	assert get_val(scanned, input, 'output', 'out')! == 'out'
-	assert get_val(scanned, input, 'o', 'out')! == 'out'
-	if _ := get_val(scanned, input, 'l', '') {
+	assert get_val(scanned, 'config', '')! == 'cfg'
+	assert get_val(scanned, 'c', '')! == 'cfg'
+	assert get_val(scanned, 'output', 'out')! == 'out'
+	assert get_val(scanned, 'o', 'out')! == 'out'
+	if _ := get_val(scanned, 'l', '') {
 		assert false
 	}
-	if _ := get_val(scanned, input, 'dummy', '') {
+	if _ := get_val(scanned, 'dummy', '') {
+		assert false
+	}
+}
+
+fn test_get_flag() {
+	input := Input{
+		args: ['-i']
+	}
+	scanned := scan('
+Options:
+  -l|--line-break     append a line break to the JSON output
+  -i|--init           create the configuration file with default values
+  -o|--output <file>  write the JSON output to a file
+',
+		input)!
+	assert get_flag(scanned, 'init')!
+	assert get_flag(scanned, 'i')!
+	assert !get_flag(scanned, 'line-break')!
+	assert !get_flag(scanned, 'l')!
+	if _ := get_flag(scanned, 'o') {
+		assert false
+	}
+	if _ := get_flag(scanned, 'dummy') {
 		assert false
 	}
 }
