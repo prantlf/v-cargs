@@ -1,5 +1,11 @@
 # Changes
 
+## [0.7.1](https://github.com/prantlf/v-cargs/compare/v0.7.0...v0.7.1) (2023-12-11)
+
+### Bug Fixes
+
+* Adapt for V langage changes ([201efd6](https://github.com/prantlf/v-cargs/commit/201efd6317ce97ffd49d0d038020882deacf6924))
+
 ## [0.7.0](https://github.com/prantlf/v-cargs/compare/v0.6.0...v0.7.0) (2023-10-15)
 
 ### Features
