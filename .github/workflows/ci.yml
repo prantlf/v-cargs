@@ -1,4 +1,4 @@
-name: Test
+name: Test and Release
 
 on:
   push:
@@ -51,3 +51,20 @@ jobs:
         git clone --depth=1 --recursive --shallow-submodules https://github.com/prantlf/v-strutil src\modules\prantlf\strutil
     - name: Test
       run: cmd /c make.bat
+
+  release:
+    if: ${{ github.ref_name == 'master' }}
+    needs:
+      - linux
+      - macos
+      - windows
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v4
+    - name: Publish release
+      uses: prantlf/publish-release-action@v1
+      with:
+        no-archives: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
