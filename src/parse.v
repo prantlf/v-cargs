@@ -27,9 +27,7 @@ struct NoArg {
 	Error
 }
 
-const (
-	re_opt = unsafe { &RegEx(nil) }
-)
+const re_opt = unsafe { &RegEx(nil) }
 
 fn init() {
 	unsafe {

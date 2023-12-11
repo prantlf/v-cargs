@@ -390,7 +390,7 @@ Options:
 }
 
 struct Renamed {
-	typ string [arg: @type]
+	typ string @[arg: @type]
 }
 
 fn test_rename_arg() {
@@ -403,7 +403,7 @@ Options:
 }
 
 struct Required {
-	typ string [arg: @type; required]
+	typ string @[arg: @type; required]
 }
 
 fn test_required_arg() {
@@ -467,7 +467,7 @@ Options:
 }
 
 struct DefaultSplit {
-	numbers []int [split]
+	numbers []int @[split]
 }
 
 fn test_array_split_default() {
@@ -482,7 +482,7 @@ Options:
 }
 
 struct CustomSplitRune {
-	chars []rune [split: ';']
+	chars []rune @[split: ';']
 }
 
 fn test_array_split_custom_rune() {
@@ -497,7 +497,7 @@ Options:
 }
 
 struct CustomSplitChar {
-	chars []char [split: ';']
+	chars []char @[split: ';']
 }
 
 fn test_array_split_custom_char() {
@@ -512,7 +512,7 @@ Options:
 }
 
 struct CustomSplit {
-	chars []string [split: ';']
+	chars []string @[split: ';']
 }
 
 fn test_array_split_custom() {
