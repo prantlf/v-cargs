@@ -341,7 +341,7 @@ Options:
 		args: ['--u8=1234']
 		ignore_number_overflow: true
 	})!
-	assert opts.u8 == u8(1234)
+	assert opts.u8 == u8(210)
 	assert args == []
 }
 
