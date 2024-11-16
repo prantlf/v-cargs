@@ -1,5 +1,11 @@
 # Changes
 
+## [0.7.3](https://github.com/prantlf/v-cargs/compare/v0.7.2...v0.7.3) (2024-11-16)
+
+### Bug Fixes
+
+* Fix sources for the new V compiler ([0033546](https://github.com/prantlf/v-cargs/commit/003354680ebca5d4a52fb725a0bfeb2cc1ae93bd))
+
 ## [0.7.2](https://github.com/prantlf/v-cargs/compare/v0.7.1...v0.7.2) (2024-01-28)
 
 ### Bug Fixes
