@@ -31,7 +31,7 @@ const re_opt = unsafe { &RegEx(nil) }
 
 fn init() {
 	unsafe {
-		cargs.re_opt = pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0) or { panic(err) }
+		re_opt = pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0) or { panic(err) }
 	}
 }
 
@@ -89,7 +89,7 @@ pub fn parse_scanned_to[T](scanned &Scanned, input &Input, mut cfg T) ![]string 
 				else {}
 			}
 
-			m := cargs.re_opt.exec(arg, 0) or {
+			m := re_opt.exec(arg, 0) or {
 				if err is NoMatch {
 					return error('invalid argument "${arg}"')
 				}
@@ -210,7 +210,7 @@ fn get_arg(scanned &Scanned, opt &Opt) !string {
 		}
 
 		if arg.len > 1 && arg[0] == `-` {
-			m := cargs.re_opt.exec(arg, 0) or {
+			m := re_opt.exec(arg, 0) or {
 				if err is NoMatch {
 					return error('invalid argument "${arg}"')
 				}

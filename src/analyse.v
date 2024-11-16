@@ -25,7 +25,7 @@ fn analyse_usage(text string, anywhere bool, no_negative bool) []Opt {
 				break
 			}
 			if re_def.matches_string(line) {
-				cargs.d.log('option matched: "%s"', line)
+				d.log('option matched: "%s"', line)
 				grp_opt := re_def.get_group_list()
 				mut opt := Opt{}
 				if grp_opt[0].start >= 0 {
@@ -40,25 +40,25 @@ fn analyse_usage(text string, anywhere bool, no_negative bool) []Opt {
 				if !no_negative && opt.long.starts_with('no-') {
 					orig_name := opt.long
 					opt.long = opt.long[3..]
-					cargs.d.log('option short: "%s", long: "%s" (originally "%s"), value: "%s"',
+					d.log('option short: "%s", long: "%s" (originally "%s"), value: "%s"',
 						opt.short, opt.long, orig_name, opt.val)
 				} else {
-					cargs.d.log('option short: "%s", long: "%s", value: "%s"', opt.short,
-						opt.long, opt.val)
+					d.log('option short: "%s", long: "%s", value: "%s"', opt.short, opt.long,
+						opt.val)
 				}
 				opts << opt
 			} else {
-				cargs.d.log('option not matched: "%s"', line)
+				d.log('option not matched: "%s"', line)
 			}
 		} else if line.contains('Options:') {
 			in_opts = true
 		}
 	}
-	if cargs.d.is_enabled() {
+	if d.is_enabled() {
 		if opts.len == 0 {
-			cargs.d.log_str('no options detected')
+			d.log_str('no options detected')
 		} else {
-			cargs.d.log('%d options detected', opts.len)
+			d.log('%d options detected', opts.len)
 		}
 	}
 	return opts

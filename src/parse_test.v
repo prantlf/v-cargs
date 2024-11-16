@@ -282,7 +282,7 @@ fn test_positives() {
 Options:
   -B
 ', Input{
-		args: ['-B']
+		args:                   ['-B']
 		disable_short_negative: true
 	})!
 	assert opts.b == true
@@ -338,7 +338,7 @@ fn test_no_overflow() {
 Options:
   --u8 <num>
 ', Input{
-		args: ['--u8=1234']
+		args:                   ['--u8=1234']
 		ignore_number_overflow: true
 	})!
 	assert opts.u8 == u8(210)
