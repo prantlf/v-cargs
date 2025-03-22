@@ -39,7 +39,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 		if arg.len > 1 && arg[0] == `-` {
 			match arg {
 				'-V', '--version' {
-					out := if input.version.len > 0 {
+					out := if input.version != '' {
 						input.version
 					} else {
 						'unknown'
@@ -67,7 +67,7 @@ pub fn parse[T](usage string, input Input) !(T, []string) {
 			}
 
 			if opt, flag := opts.find(name, input) {
-				if opt.val.len > 0 {
+				if opt.val != '' {
 					val := if grp_opt[2].start >= 0 {
 						arg[grp_opt[2].start..grp_opt[2].end]
 					} else {
@@ -256,7 +256,7 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 }
 
 fn add_val[T](mut arr []T, val string, sep string, ignore_overflow bool) ![]T {
-	if sep.len > 0 {
+	if sep != '' {
 		vals := val.split(sep)
 		for item in vals {
 			arr << convert_val[T](item, ignore_overflow)!
@@ -372,7 +372,7 @@ fn get_float[T](val string, ignore_overflow bool) !T {
 // }
 
 fn (opt Opt) field_name() string {
-	name := if opt.long.len > 0 {
+	name := if opt.long != '' {
 		if opt.long.contains_u8(`-`) {
 			replace_u8(opt.long, `-`, `_`)
 		} else {
@@ -404,8 +404,8 @@ fn has_upper(s string) bool {
 }
 
 fn (opt Opt) name() string {
-	return if opt.short.len > 0 {
-		if opt.long.len > 0 {
+	return if opt.short != '' {
+		if opt.long != '' {
 			'${opt.short}|${opt.long}'
 		} else {
 			opt.short

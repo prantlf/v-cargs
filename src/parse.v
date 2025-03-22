@@ -27,12 +27,10 @@ struct NoArg {
 	Error
 }
 
-const re_opt = unsafe { &RegEx(nil) }
+const re_opt = compile_re()
 
-fn init() {
-	unsafe {
-		re_opt = pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0) or { panic(err) }
-	}
+fn compile_re() &RegEx {
+	return pcre_compile(r'^-(?:([^\-])|-([^ =]+))(?:\s*=(.+))?$', 0) or { panic(err) }
 }
 
 pub fn parse[T](usage string, input &Input) !(&T, []string) {
@@ -74,7 +72,7 @@ pub fn parse_scanned_to[T](scanned &Scanned, input &Input, mut cfg T) ![]string 
 		if arg.len > 1 && arg[0] == `-` {
 			match arg {
 				'-V', '--version' {
-					out := if input.version.len > 0 {
+					out := if input.version != '' {
 						input.version
 					} else {
 						'unknown'
@@ -105,7 +103,7 @@ pub fn parse_scanned_to[T](scanned &Scanned, input &Input, mut cfg T) ![]string 
 			d.log('option "%s" detected', name)
 
 			if opt, flag := opts.find_opt_and_flag(name, input) {
-				if opt.val.len > 0 {
+				if opt.val != '' {
 					val := if start, end := m.group_bounds(3) {
 						arg[start..end]
 					} else {
@@ -162,7 +160,7 @@ pub fn needs_val(scanned &Scanned, arg_name string) !bool {
 pub fn get_val(scanned &Scanned, arg_name string, def_val string) !string {
 	d.log('get value of command-line argument "%s"', arg_name)
 	opt := scanned.opts.find_opt(arg_name) or { return error('unknown option "${arg_name}"') }
-	if opt.val.len == 0 {
+	if opt.val == '' {
 		return error('"${arg_name}" supports no value')
 	}
 
@@ -417,7 +415,7 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 
 			if d.is_enabled() {
 				if d.is_enabled() {
-					split := if sep.len > 0 {
+					split := if sep != '' {
 						'split with "${sep}"'
 					} else {
 						'no splitting'
@@ -471,7 +469,7 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 }
 
 fn add_val[T](mut arr []T, val string, sep string, ignore_overflow bool) ![]T {
-	if sep.len > 0 {
+	if sep != '' {
 		vals := val.split(sep)
 		for item in vals {
 			arr << convert_val[T](item, ignore_overflow)!
@@ -610,7 +608,7 @@ fn get_char[T](val string) !T {
 }
 
 fn (opt Opt) field_name() string {
-	name := if opt.long.len > 0 {
+	name := if opt.long != '' {
 		if opt.long.contains_u8(`-`) {
 			replace_u8(opt.long, `-`, `_`)
 		} else {
@@ -642,8 +640,8 @@ fn has_upper(s string) bool {
 }
 
 fn (opt Opt) name() string {
-	return if opt.short.len > 0 {
-		if opt.long.len > 0 {
+	return if opt.short != '' {
+		if opt.long != '' {
 			'${opt.short}|${opt.long}'
 		} else {
 			opt.short

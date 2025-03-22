@@ -21,7 +21,7 @@ fn analyse_usage(text string, anywhere bool, no_negative bool) []Opt {
 	lines := text.split_into_lines()
 	for line in lines {
 		if in_opts || anywhere {
-			if line.len == 0 && !anywhere {
+			if line == '' && !anywhere {
 				break
 			}
 			if re_def.matches_string(line) {

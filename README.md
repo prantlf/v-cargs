@@ -167,7 +167,7 @@ input := Input{ version: '0.0.1' }
 scanned := scan(usage, input)!
 config := get_val(scanned, 'config', '')!
 mut opts := Opts{}
-if config.len > 0 {
+if config != '' {
   read_config_to(config_name, mut opts)!
 }
 args := parse_scanned_to(scanned, input, mut opts)!
