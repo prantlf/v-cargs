@@ -1,5 +1,11 @@
 # Changes
 
+## [0.7.4](https://github.com/prantlf/v-cargs/compare/v0.7.3...v0.7.4) (2025-07-31)
+
+### Bug Fixes
+
+* Work around compiler bug with optional fields ([7e8b4bf](https://github.com/prantlf/v-cargs/commit/7e8b4bf53860638388c8c89baf9ae316f10d9254))
+
 ## [0.7.3](https://github.com/prantlf/v-cargs/compare/v0.7.2...v0.7.3) (2024-11-16)
 
 ### Bug Fixes
