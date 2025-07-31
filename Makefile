@@ -5,6 +5,6 @@ check:
 	v vet .
 
 test:
-	v -use-os-system-to-run test .
-	v -use-os-system-to-run run src/help_test.v
-	v -use-os-system-to-run run src/version_test.v
+	v test .
+	v run src/help_test.v
+	v run src/version_test.v

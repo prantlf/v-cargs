@@ -432,31 +432,57 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 			$if field.is_enum {
 				orig_val := cfg.$(field.name)
 				cfg.$(field.name) = get_enum(val, orig_val)!
-			} $else $if field.typ is int || field.typ is ?int {
+			} $else $if field.typ is int {
 				cfg.$(field.name) = get_int[int](val, ino)!
-			} $else $if field.typ is u8 || field.typ is ?u8 {
+			} $else $if field.typ is ?int {
+				cfg.$(field.name) = get_int[int](val, ino)!
+			} $else $if field.typ is u8 {
 				cfg.$(field.name) = get_int[u8](val, ino)!
-			} $else $if field.typ is u16 || field.typ is ?u16 {
+			} $else $if field.typ is ?u8 {
+				cfg.$(field.name) = get_int[u8](val, ino)!
+			} $else $if field.typ is u16 {
 				cfg.$(field.name) = get_int[u16](val, ino)!
-			} $else $if field.typ is u32 || field.typ is ?u32 {
+			} $else $if field.typ is ?u16 {
+				cfg.$(field.name) = get_int[u16](val, ino)!
+			} $else $if field.typ is u32 {
 				cfg.$(field.name) = get_int[u32](val, ino)!
-			} $else $if field.typ is u64 || field.typ is ?u64 {
+			} $else $if field.typ is ?u32 {
+				cfg.$(field.name) = get_int[u32](val, ino)!
+			} $else $if field.typ is u64 {
 				cfg.$(field.name) = get_int[u64](val, ino)!
-			} $else $if field.typ is i8 || field.typ is ?i8 {
+			} $else $if field.typ is ?u64 {
+				cfg.$(field.name) = get_int[u64](val, ino)!
+			} $else $if field.typ is i8 {
 				cfg.$(field.name) = get_int[i8](val, ino)!
-			} $else $if field.typ is i16 || field.typ is ?i16 {
+			} $else $if field.typ is ?i8 {
+				cfg.$(field.name) = get_int[i8](val, ino)!
+			} $else $if field.typ is i16 {
 				cfg.$(field.name) = get_int[i16](val, ino)!
-			} $else $if field.typ is i64 || field.typ is ?i64 {
+			} $else $if field.typ is ?i16 {
+				cfg.$(field.name) = get_int[i16](val, ino)!
+			} $else $if field.typ is i64 {
 				cfg.$(field.name) = get_int[i64](val, ino)!
-			} $else $if field.typ is f32 || field.typ is ?f32 {
+			} $else $if field.typ is ?i64 {
+				cfg.$(field.name) = get_int[i64](val, ino)!
+			} $else $if field.typ is f32 {
 				cfg.$(field.name) = get_float[f32](val, ino)!
-			} $else $if field.typ is f64 || field.typ is ?f64 {
+			} $else $if field.typ is ?f32 {
+				cfg.$(field.name) = get_float[f32](val, ino)!
+			} $else $if field.typ is f64 {
 				cfg.$(field.name) = get_float[f64](val, ino)!
-			} $else $if field.typ is rune || field.typ is ?rune {
+			} $else $if field.typ is ?f64 {
+				cfg.$(field.name) = get_float[f64](val, ino)!
+			} $else $if field.typ is rune {
 				cfg.$(field.name) = get_char[rune](val)!
-			} $else $if field.typ is char || field.typ is ?char {
+			} $else $if field.typ is ?rune {
+				cfg.$(field.name) = get_char[rune](val)!
+			} $else $if field.typ is char {
 				cfg.$(field.name) = get_char[char](val)!
-			} $else $if field.typ is string || field.typ is ?string {
+			} $else $if field.typ is ?char {
+				cfg.$(field.name) = get_char[char](val)!
+			} $else $if field.typ is string {
+				cfg.$(field.name) = val
+			} $else $if field.typ is ?string {
 				cfg.$(field.name) = val
 			} $else $if field.is_array {
 				mut arr := cfg.$(field.name)
