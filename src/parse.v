@@ -539,6 +539,7 @@ fn convert_val[T](val string, ignore_overflow bool) !T {
 	} $else {
 		return error('${val} cannot be converted to ${type_name(T.idx)}')
 	}
+	return error('unreachable code in convert_val')
 }
 
 fn set_flag[T](mut cfg T, opt Opt, flag bool, no_negative bool) ! {
