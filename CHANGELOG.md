@@ -1,5 +1,11 @@
 # Changes
 
+## [0.7.5](https://github.com/prantlf/v-cargs/compare/v0.7.4...v0.7.5) (2025-08-31)
+
+### Bug Fixes
+
+* Work around a bug in V about detecting return from function ([c346df6](https://github.com/prantlf/v-cargs/commit/c346df67a0f58007fcc20050d61c83f66ab3fc53))
+
 ## [0.7.4](https://github.com/prantlf/v-cargs/compare/v0.7.3...v0.7.4) (2025-07-31)
 
 ### Bug Fixes
