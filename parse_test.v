@@ -34,8 +34,9 @@ fn test_opts_no_args() {
 Options:
   -l|--line-break     append a line break to the JSON output
   -o|--output <file>  write the JSON output to a file
-',
-		Input{ args: [] })!
+', Input{
+		args: []
+	})!
 	assert opts.line_break == false
 	assert opts.output == ''
 	assert args == []
@@ -46,8 +47,13 @@ fn test_opts_args() {
 Options:
   -l|--line-break     append a line break to the JSON output
   -o|--output <file>  write the JSON output to a file
-',
-		Input{ args: ['-l', '-o', 'ci.yaml'] })!
+', Input{
+		args: [
+			'-l',
+			'-o',
+			'ci.yaml',
+		]
+	})!
 	assert opts.line_break == true
 	assert opts.output == 'ci.yaml'
 	assert args == []
@@ -59,8 +65,13 @@ fn test_opts_args_to() {
 Options:
   -l|--line-break     append a line break to the JSON output
   -o|--output <file>  write the JSON output to a file
-',
-		Input{ args: ['-l', '-o', 'ci.yaml'] }, mut opts)!
+', Input{
+		args: [
+			'-l',
+			'-o',
+			'ci.yaml',
+		]
+	}, mut opts)!
 	assert opts.line_break == true
 	assert opts.output == 'ci.yaml'
 	assert args == []
@@ -69,8 +80,12 @@ Options:
 fn test_no_options_line() {
 	opts, args := parse[Two]('
   -l|--line-break     append a line break to the JSON output
-',
-		Input{ args: ['-l'], options_anywhere: true })!
+', Input{
+		args:             [
+			'-l',
+		]
+		options_anywhere: true
+	})!
 	assert opts.line_break == true
 }
 
@@ -78,8 +93,12 @@ fn test_no_negative_options() {
 	opts, args := parse[TwoNegative]('
 Options:
   -n|--no-line-break  do not append a line break to the JSON output
-',
-		Input{ args: ['-n'], no_negative_options: true })!
+', Input{
+		args:                [
+			'-n',
+		]
+		no_negative_options: true
+	})!
 	assert opts.no_line_break == true
 }
 
@@ -87,8 +106,11 @@ fn test_negative_option() {
 	opts, args := parse[TwoPositiveTrue]('
 Options:
   -N|--no-line-break  do not append a line break to the JSON output
-',
-		Input{ args: ['-N'] })!
+', Input{
+		args: [
+			'-N',
+		]
+	})!
 	assert opts.line_break == false
 }
 
@@ -96,8 +118,11 @@ fn test_positive_option() {
 	opts, args := parse[TwoPositiveFalse]('
 Options:
   -N|--no-line-break  do not append a line break to the JSON output
-',
-		Input{ args: ['-n'] })!
+', Input{
+		args: [
+			'-n',
+		]
+	})!
 	assert opts.line_break == true
 }
 
@@ -105,8 +130,11 @@ fn test_neg_short_flag() {
 	opts, args := parse[Two]('
 Options:
   -l, --line-break  append a line break to the JSON output
-',
-		Input{ args: ['-L'] })!
+', Input{
+		args: [
+			'-L',
+		]
+	})!
 	assert opts.line_break == false
 	assert args == []
 }
@@ -115,8 +143,11 @@ fn test_neg_long_flag() {
 	opts, args := parse[Two]('
 Options:
   -l|--line-break  append a line break to the JSON output
-',
-		Input{ args: ['--no-line-break'] })!
+', Input{
+		args: [
+			'--no-line-break',
+		]
+	})!
 	assert opts.line_break == false
 	assert args == []
 }
@@ -125,8 +156,11 @@ fn test_neg_long_flag_declaration() {
 	opts, args := parse[TwoTrue]('
 Options:
   --no-line-break  append a line break to the JSON output
-',
-		Input{ args: ['--no-line-break'] })!
+', Input{
+		args: [
+			'--no-line-break',
+		]
+	})!
 	assert opts.line_break == false
 	assert args == []
 }
@@ -199,8 +233,7 @@ Options:
   --f64 <num>
   --rune <rune>
   --char <char>
-',
-		Input{
+', Input{
 		args: ['--human=woman', '--u8=1', '--u16=2', '--u32=3', '--u64=4', '--i8=5', '--i16=6',
 			'--int=7', '--i64=8', '--f32=9.1', '--f64=9.2', '--rune=a', '--char=b']
 	})!
@@ -397,8 +430,12 @@ fn test_rename_arg() {
 	opts, args := parse[Renamed]('
 Options:
   -t|--type <type>  file type (textual or binary)
-',
-		Input{ args: ['-t', 'text'] })!
+', Input{
+		args: [
+			'-t',
+			'text',
+		]
+	})!
 	assert opts.typ == 'text'
 }
 
@@ -421,8 +458,11 @@ fn test_inapplicable_arg() {
 	parse[Positives]('
 Options:
   -p|--pretty  prints the JSON output with line breaks and indented
-',
-		Input{ args: ['-p'] }) or {
+', Input{
+		args: [
+			'-p',
+		]
+	}) or {
 		assert err.msg() == 'inappliccable argument p|pretty'
 		return
 	}
@@ -474,8 +514,7 @@ fn test_array_split_default() {
 	opts, args := parse[DefaultSplit]('
 Options:
   -n, --numbers <number>  a list of numbers to use
-',
-		Input{
+', Input{
 		args: ['-n', '1,2']
 	})!
 	assert opts.numbers == [1, 2]
@@ -489,8 +528,7 @@ fn test_array_split_custom_rune() {
 	opts, args := parse[CustomSplitRune]('
 Options:
   -c, --chars <char>  allowed characters
-',
-		Input{
+', Input{
 		args: ['-c', 'a;b']
 	})!
 	assert opts.chars == [`a`, `b`]
@@ -504,8 +542,7 @@ fn test_array_split_custom_char() {
 	opts, args := parse[CustomSplitChar]('
 Options:
   -c, --chars <char>  allowed characters
-',
-		Input{
+', Input{
 		args: ['-c', 'a;b']
 	})!
 	assert opts.chars == [char(`a`), char(`b`)]
@@ -519,8 +556,7 @@ fn test_array_split_custom() {
 	opts, args := parse[CustomSplit]('
 Options:
   -c, --chars <char>  allowed characters
-',
-		Input{
+', Input{
 		args: ['-c', 'a;b']
 	})!
 	assert opts.chars == ['a', 'b']

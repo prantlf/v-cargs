@@ -33,8 +33,7 @@ fn test_short_flag() {
 	opts := analyse_usage('
 Options:
   -l  append a line break to the JSON output
-', false,
-		false)
+', false, false)
 	assert opts.len == 1
 	assert opts[0].short == 'l'
 	assert opts[0].long == ''
@@ -81,8 +80,7 @@ fn test_short_val() {
 	opts := analyse_usage('
 Options:
   -o <file>  write the JSON output to a file
-', false,
-		false)
+', false, false)
 	assert opts.len == 1
 	assert opts[0].short == 'o'
 	assert opts[0].long == ''
@@ -93,8 +91,8 @@ fn test_long_val() {
 	opts := analyse_usage('
 Options:
   --output [file]  write the JSON output to a file
-',
-		false, false)
+', false,
+		false)
 	assert opts.len == 1
 	assert opts[0].short == ''
 	assert opts[0].long == 'output'

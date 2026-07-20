@@ -1,0 +1,28 @@
+fn parse[T]() !T {
+	mut cfg := T{}
+	set_val(mut cfg)!
+	return cfg
+}
+
+fn set_val[T](mut cfg T) ! {
+	$for field in T.fields {
+		$if field.is_enum {
+			cfg.$(field.name) = get_enum()!
+		}
+	}
+}
+
+fn get_enum() !int {
+	return 0
+}
+
+enum Human {
+	man
+	woman
+}
+
+struct Integrals {
+	human Human
+}
+
+parse[Integrals]()!

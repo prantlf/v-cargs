@@ -1,0 +1,20 @@
+fn set_flag[T](mut cfg T, name string, flag bool) ! {
+	$for field in T.fields {
+		if name == field.name {
+			$if field.typ is bool {
+				cfg.$(field.name) = flag
+			} $else $if field.typ is ?bool {
+				cfg.$(field.name) = flag
+			}
+		}
+	}
+}
+
+struct Cfg {
+	force bool
+}
+
+fn test_assign_to_bool() {
+	mut cfg := Cfg{}
+	set_flag(mut cfg, 'force', true)!
+}

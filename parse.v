@@ -292,7 +292,7 @@ fn split_short_opts(opts []Opt, raw_args []string) ![]string {
 	return args
 }
 
-fn (opts []Opt) find_opt_and_flag(arg string, input Input) ?(Opt, bool) {
+fn (opts []Opt) find_opt_and_flag(arg string, input &Input) ?(Opt, bool) {
 	mut flag := true
 	name := if !input.no_negative_options && arg.starts_with('no-') {
 		flag = false
@@ -354,7 +354,11 @@ fn check_applied[T](cfg T, applied []Opt, no_negative bool) ! {
 		mut required := false
 		for attr in field.attrs {
 			if attr.starts_with('arg: ') {
-				arg_name = attr[5..]
+				arg_name = if attr[5] == `'` {
+					attr[6..(attr.len - 1)]
+				} else {
+					attr[5..]
+				}
 			} else if attr == 'required' {
 				required = true
 			}
@@ -392,7 +396,7 @@ fn check_applied[T](cfg T, applied []Opt, no_negative bool) ! {
 	}
 }
 
-fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
+fn set_val[T](mut cfg T, opt Opt, val string, input &Input) ! {
 	name := opt.field_name()
 	$for field in T.fields {
 		mut arg_name := field.name
@@ -400,9 +404,17 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 		mut sep := ''
 		for attr in field.attrs {
 			if attr.starts_with('arg: ') {
-				arg_name = attr[5..]
+				arg_name = if attr[5] == `'` {
+					attr[6..(attr.len - 1)]
+				} else {
+					attr[5..]
+				}
 			} else if attr.starts_with('split: ') {
-				sep = attr[7..]
+				sep = if attr[7] == `'` {
+					attr[8..(attr.len - 1)]
+				} else {
+					attr[7..]
+				}
 			} else if attr == 'split' {
 				sep = ','
 			} else if attr == 'nooverflow' {
@@ -449,9 +461,9 @@ fn set_val[T](mut cfg T, opt Opt, val string, input Input) ! {
 			} $else $if field.typ is ?u32 {
 				cfg.$(field.name) = get_int[u32](val, ino)!
 			} $else $if field.typ is u64 {
-				cfg.$(field.name) = get_int[u64](val, ino)!
+				cfg.$(field.name) = get_uint[u64](val, ino)!
 			} $else $if field.typ is ?u64 {
-				cfg.$(field.name) = get_int[u64](val, ino)!
+				cfg.$(field.name) = get_uint[u64](val, ino)!
 			} $else $if field.typ is i8 {
 				cfg.$(field.name) = get_int[i8](val, ino)!
 			} $else $if field.typ is ?i8 {
@@ -523,6 +535,8 @@ fn convert_val[T](val string, ignore_overflow bool) !T {
 		return get_int[i16](val, ignore_overflow)!
 	} $else $if T is i64 {
 		return get_int[i64](val, ignore_overflow)!
+	} $else $if T is u64 {
+		return get_uint[u64](val, ignore_overflow)!
 	} $else $if T is f32 {
 		return get_float[f32](val, ignore_overflow)!
 	} $else $if T is f64 {
@@ -548,7 +562,11 @@ fn set_flag[T](mut cfg T, opt Opt, flag bool, no_negative bool) ! {
 		mut arg_name := field.name
 		for attr in field.attrs {
 			if attr.starts_with('arg: ') {
-				arg_name = attr[5..]
+				arg_name = if attr[5] == `'` {
+					attr[6..(attr.len - 1)]
+				} else {
+					attr[5..]
+				}
 			}
 		}
 
@@ -597,6 +615,23 @@ fn get_int[T](val string, ignore_overflow bool) !T {
 	if num := atoi(val) {
 		i := T(num)
 		if num != i {
+			if ignore_overflow {
+				if d.is_enabled() {
+					d.log_str('forcing conversion of "${num}" to "${i}')
+				}
+			} else {
+				return error('unable to convert "${num}" to ${T.name}')
+			}
+		}
+		return i
+	}
+	return error('"${val}" is not an integer')
+}
+
+fn get_uint[T](val string, ignore_overflow bool) !T {
+	if num := atoi(val) {
+		i := T(num)
+		if u64(num) != i {
 			if ignore_overflow {
 				if d.is_enabled() {
 					d.log_str('forcing conversion of "${num}" to "${i}')

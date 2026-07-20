@@ -1,0 +1,29 @@
+import strconv { atoi }
+
+fn set_val[T](mut cfg T, name string, val string) ! {
+	$for field in T.fields {
+		if name == field.name {
+			$if field.typ is int || field.typ is ?int {
+				cfg.$(field.name) = atoi(val)!
+			} $else $if field.typ is string || field.typ is ?string {
+				cfg.$(field.name) = val
+			}
+		}
+	}
+}
+
+struct Cfg {
+	output   string
+	count    int
+	optional ?int
+}
+
+fn test_assign_to_string() {
+	mut cfg := Cfg{}
+	set_val(mut cfg, 'output', 'file')!
+	assert cfg.output == 'file'
+	set_val(mut cfg, 'count', '42')!
+	assert cfg.count == 42
+	set_val(mut cfg, 'optional', '1')!
+	assert cfg.optional? == 1
+}
