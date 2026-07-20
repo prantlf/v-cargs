@@ -1,5 +1,11 @@
 # Changes
 
+## [0.8.0](https://github.com/prantlf/v-cargs/compare/v0.7.5...v0.8.0) (2026-07-20)
+
+### Features
+
+* Adapt to breaking changes in V ([3fba087](https://github.com/prantlf/v-cargs/commit/3fba0873666d4f55301403391affc0b2bdd194fc))
+
 ## [0.7.5](https://github.com/prantlf/v-cargs/compare/v0.7.4...v0.7.5) (2025-08-31)
 
 ### Bug Fixes
